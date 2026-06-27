@@ -1,1 +1,2 @@
+Unblock-File -Path ".\patch_and_compile.ps1"
 .\patch_and_compile.ps1 YamBMS_STRING1_ORIGINAL.yaml

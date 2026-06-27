@@ -375,7 +375,7 @@ interval:
               if (full) {
                 id(bms1_soc_anchor_counter)++;
                 if (id(bms1_soc_anchor_counter) >= 6 && !id(bms1_soc_anchored)) {
-                  auto call = id(bms1_battery_capacity).make_call();
+                  auto call = id(bms1_total_capacity_number).make_call();
                   call.set_value(94.0f);
                   call.perform();
                   id(bms1_soc_anchored) = true;
@@ -401,7 +401,7 @@ interval:
               if (full) {
                 id(bms2_soc_anchor_counter)++;
                 if (id(bms2_soc_anchor_counter) >= 6 && !id(bms2_soc_anchored)) {
-                  auto call = id(bms2_battery_capacity).make_call();
+                  auto call = id(bms2_total_capacity_number).make_call();
                   call.set_value(94.0f);
                   call.perform();
                   id(bms2_soc_anchored) = true;
@@ -423,7 +423,7 @@ interval:
       - lambda: |-
           // Restore BMS1 capacity after anchor
           if (id(bms1_restore_pending)) {
-            auto call = id(bms1_battery_capacity).make_call();
+            auto call = id(bms1_total_capacity_number).make_call();
             call.set_value(95.0f);
             call.perform();
             id(bms1_restore_pending) = false;
@@ -431,9 +431,10 @@ interval:
           }
           // Restore BMS2 capacity after anchor
           if (id(bms2_restore_pending)) {
-            auto call = id(bms2_battery_capacity).make_call();
+            auto call = id(bms2_total_capacity_number).make_call();
             call.set_value(95.0f);
             call.perform();
             id(bms2_restore_pending) = false;
             ESP_LOGI("soc_fix", "BMS2: capacity restored to 95Ah");
           }
+
