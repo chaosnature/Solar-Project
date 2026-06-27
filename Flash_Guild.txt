@@ -1,0 +1,4 @@
+python3 /home/chaosnature/esphome-yambms/fix_ha_dashboard.py --dry-run
+
+python3 fix_ha_dashboard.py --dry-run   # preview
+python3 fix_ha_dashboard.py             # apply + restart HA
