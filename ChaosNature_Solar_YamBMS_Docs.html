@@ -1,0 +1,253 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChaosNature Solar - YamBMS Documentation</title>
+<style>
+  body { font-family: 'Segoe UI', sans-serif; background: #0f1117; color: #e0e0e0; margin: 0; padding: 20px; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #00d4ff; padding-bottom: 10px; }
+  h2 { color: #ffa500; margin-top: 30px; border-left: 4px solid #ffa500; padding-left: 10px; }
+  h3 { color: #00ff88; }
+  .card { background: #1a1d2e; border: 1px solid #2a2d3e; border-radius: 8px; padding: 15px; margin: 15px 0; }
+  .warning { background: #2a1a00; border: 1px solid #ffa500; border-radius: 8px; padding: 15px; margin: 15px 0; }
+  .success { background: #001a0f; border: 1px solid #00ff88; border-radius: 8px; padding: 15px; margin: 15px 0; }
+  .danger { background: #1a0000; border: 1px solid #ff4444; border-radius: 8px; padding: 15px; margin: 15px 0; }
+  code { background: #252839; padding: 2px 6px; border-radius: 4px; color: #00d4ff; font-family: 'Courier New', monospace; }
+  pre { background: #252839; padding: 15px; border-radius: 8px; overflow-x: auto; border-left: 3px solid #00d4ff; }
+  pre code { background: none; padding: 0; color: #e0e0e0; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th { background: #252839; color: #00d4ff; padding: 10px; text-align: left; }
+  td { padding: 8px 10px; border-bottom: 1px solid #2a2d3e; }
+  tr:hover { background: #1e2135; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold; }
+  .badge-green { background: #00ff8833; color: #00ff88; border: 1px solid #00ff88; }
+  .badge-orange { background: #ffa50033; color: #ffa500; border: 1px solid #ffa500; }
+  .badge-red { background: #ff444433; color: #ff4444; border: 1px solid #ff4444; }
+  .badge-blue { background: #00d4ff33; color: #00d4ff; border: 1px solid #00d4ff; }
+  .toc { background: #1a1d2e; border: 1px solid #2a2d3e; border-radius: 8px; padding: 15px; margin: 15px 0; }
+  .toc a { color: #00d4ff; text-decoration: none; display: block; padding: 3px 0; }
+  .toc a:hover { color: #ffa500; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+  @media(max-width:768px) { .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<h1>⚡ ChaosNature Solar - YamBMS Project Documentation</h1>
+<p>Last updated: <strong>June 25 2026</strong> | YamBMS v1.6.0 | ESPHome 2025.11.0</p>
+
+<div class="toc">
+  <h3>📋 Contents</h3>
+  <a href="#system">1. System Overview</a>
+  <a href="#devices">2. Device Inventory</a>
+  <a href="#drift">3. Coulomb Drift Fix</a>
+  <a href="#flash">4. How to Flash a Device</a>
+  <a href="#pipeline">5. Compile Pipeline</a>
+  <a href="#ha">6. Home Assistant Notes</a>
+  <a href="#backups">7. Backups</a>
+  <a href="#known">8. Known Issues</a>
+  <a href="#pending">9. Pending Tasks</a>
+</div>
+
+<h2 id="system">1. System Overview</h2>
+<div class="card">
+  <p>A home solar battery system with 4x JK-BMS units managed by 2x YamBMS ESP32-S3 devices communicating via BLE. YamBMS aggregates BMS data and sends CAN bus messages to a Solis 3kW inverter. Home Assistant monitors and controls the system.</p>
+  <div class="grid">
+    <div>
+      <h3>String 1 (Kitchen)</h3>
+      <ul>
+        <li>YamBMS-1 at <code>192.168.0.101</code></li>
+        <li>JK-BMS 1: <code>C8:47:80:08:20:D0</code></li>
+        <li>JK-BMS 2: <code>C8:47:80:09:AB:10</code></li>
+        <li>CAN bus → Solis inverter</li>
+      </ul>
+    </div>
+    <div>
+      <h3>String 2 (Shed)</h3>
+      <ul>
+        <li>YamBMS-2 at <code>192.168.0.21</code></li>
+        <li>JK-BMS 3: <code>C8:47:80:0F:F4:B5</code></li>
+        <li>JK-BMS 4: <code>C8:47:80:11:B8:62</code></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<h2 id="devices">2. Device Inventory</h2>
+<table>
+  <tr><th>Device</th><th>IP</th><th>MAC</th><th>Firmware</th><th>Status</th></tr>
+  <tr><td>YamBMS-1 (AtomS3)</td><td><code>192.168.0.101</code></td><td><code>34:B7:DA:54:FD:18</code></td><td>ESPHome 2025.11.0 / YamBMS 1.6.0</td><td><span class="badge badge-green">LIVE</span></td></tr>
+  <tr><td>YamBMS-2 (AtomS3-Lite)</td><td><code>192.168.0.21</code></td><td><code>34:B7:DA:54:D5:8C</code></td><td>ESPHome 2025.9.2 / YamBMS 1.5.8</td><td><span class="badge badge-orange">OLD FIRMWARE</span></td></tr>
+  <tr><td>Home Assistant</td><td><code>192.168.1.13:8123</code></td><td>—</td><td>Docker on Pi</td><td><span class="badge badge-green">LIVE</span></td></tr>
+  <tr><td>Pi (Production)</td><td><code>192.168.1.13</code></td><td>—</td><td>pi-docker</td><td><span class="badge badge-green">LIVE</span></td></tr>
+  <tr><td>Solis 3kW Inverter</td><td>CAN bus</td><td>—</td><td>—</td><td><span class="badge badge-green">LIVE</span></td></tr>
+</table>
+
+<div class="warning">
+  ⚠️ <strong>YamBMS-2 still on old firmware v1.5.8.</strong> Needs upgrading — plan HA entity migration first to avoid dashboard breakage.
+</div>
+
+<h2 id="drift">3. Coulomb Drift Fix</h2>
+<div class="card">
+  <h3>Problem</h3>
+  <p>JK-BMS coulomb counter drifts over time, causing SoC to show incorrect values (e.g. 85% when battery is actually full). The BMS needs an anchor event to recalibrate its coulomb counter to 100%.</p>
+
+  <h3>Root Cause</h3>
+  <p>The JK-BMS recalibrates SoC when the <code>total_battery_capacity</code> number entity is changed. YamBMS does not trigger this automatically.</p>
+
+  <h3>Solution</h3>
+  <p>New package file <code>packages/bms/bms_soc_drift_fix_JK_BLE.yaml</code> monitors voltage, current and SoC. When all three indicate full charge held for 30 seconds, it toggles the capacity number to force recalibration.</p>
+
+  <h3>Files Modified</h3>
+  <table>
+    <tr><th>File</th><th>Change</th></tr>
+    <tr><td><code>packages/bms/bms_soc_drift_fix_JK_BLE.yaml</code></td><td><span class="badge badge-blue">NEW FILE</span></td></tr>
+    <tr><td><code>packages/bms/bms_sensors_JK_BLE_standard.yaml</code></td><td>Added <code>id: bms${bms_id}_total_capacity_number</code> to total_battery_capacity number entity (~line 269)</td></tr>
+    <tr><td><code>packages/bms/bms_combine_JK_BLE_standard.yaml</code></td><td>Added include for drift fix package</td></tr>
+  </table>
+
+  <h3>Trigger Conditions (all three for 30 seconds)</h3>
+  <table>
+    <tr><th>Condition</th><th>Value</th><th>Reason</th></tr>
+    <tr><td>Battery voltage</td><td>≥ 56.4V</td><td>Just below float (56.6V) — only reachable when fully charged</td></tr>
+    <tr><td>Charge current</td><td>≤ 2A</td><td>Nearly stopped charging</td></tr>
+    <tr><td>SoC</td><td>≥ 98%</td><td>Coulomb counter already near full</td></tr>
+  </table>
+  <p>Reset condition: voltage drops below <strong>55.0V</strong> (new discharge cycle)</p>
+
+  <h3>System Voltages</h3>
+  <table>
+    <tr><th>Setting</th><th>Value</th></tr>
+    <tr><td>Bulk</td><td>57.0V</td></tr>
+    <tr><td>Float</td><td>56.6V</td></tr>
+    <tr><td>Rebulk</td><td>51.8V</td></tr>
+    <tr><td>Drift fix trigger</td><td>56.4V</td></tr>
+    <tr><td>Drift fix reset</td><td>55.0V</td></tr>
+  </table>
+
+  <h3>Log Output</h3>
+  <pre><code># When triggered:
+[I][soc_fix]: BMS1: coulomb anchor triggered V=56.xx I=x.xx SoC=99%
+
+# When reset:
+[I][soc_fix]: BMS1: anchor reset, new cycle V=xx.xx</code></pre>
+
+  <div class="warning">⚠️ Voltage thresholds MUST be adjusted to match your system bulk/float voltages before flashing.</div>
+</div>
+
+<h2 id="flash">4. How to Flash a Device</h2>
+<div class="card">
+  <h3>First time — USB flash</h3>
+  <pre><code>python -m esptool --port COM6 write-flash 0x0 ".esphome\build\yambms-1\.pioenvs\yambms-1\firmware.factory.bin"</code></pre>
+
+  <div class="warning">⚠️ If the live device is already at the same static IP, disconnect it first to avoid IP conflict during boot.</div>
+
+  <h3>OTA update (subsequent flashes)</h3>
+  <pre><code>python fix_both.py
+python compile_test.py YamBMS_STRING1_TEST.yaml 192.168.0.101</code></pre>
+
+  <h3>Flash YamBMS-2 (when ready)</h3>
+  <pre><code>python compile_test.py YamBMS_STRING2_TEST.yaml 192.168.0.21</code></pre>
+  <p><span class="badge badge-orange">NOTE</span> YamBMS_STRING2_TEST.yaml not yet created. Plan HA entity migration first.</p>
+
+  <h3>IP Conflict Rule</h3>
+  <p>ESPHome static IP is not enforced by the router. If two devices boot with the same static IP they will fight. Always ensure only one device is powered on per IP.</p>
+</div>
+
+<h2 id="pipeline">5. Compile Pipeline</h2>
+<div class="card">
+  <h3>Working Directory</h3>
+  <pre><code>C:\Users\osagk\Desktop\Dev\esphome-yambms\</code></pre>
+
+  <h3>Required fix scripts (run before every compile)</h3>
+  <table>
+    <tr><th>Script</th><th>What it does</th></tr>
+    <tr><td><code>fix_orphan.py</code></td><td>Removes orphaned <code>name: "errors bitmask"</code> line 195 in cached packages</td></tr>
+    <tr><td><code>fix_all_desktop.py</code></td><td>Fixes <code>errors_bitmask</code> → <code>errors_bitmask_hex</code> (syssi v3.0.0 rename)</td></tr>
+    <tr><td><code>fix_both.py</code></td><td>Fixes drift fix comment + comments out web server auth</td></tr>
+  </table>
+  <p>The master script <code>compile_test.py</code> runs fix_orphan and fix_all_desktop automatically as steps 1 and 2.</p>
+
+  <h3>compile_test.py steps</h3>
+  <pre><code>Step 1: Fix orphan line in cached packages
+Step 2: Fix errors_bitmask rename
+Step 3: Create git head-ref files (prevents CMake git error)
+Step 4: esphome compile
+Step 5: esphome upload (OTA)</code></pre>
+
+  <h3>Key substitutions (entity ID critical — never change)</h3>
+  <table>
+    <tr><th>Device</th><th>hostname</th><th>name</th><th>bms_name</th><th>static_ip</th></tr>
+    <tr><td>YamBMS-1</td><td>yambms-1</td><td>String-1</td><td>JK-BMS 1 / JK-BMS 2</td><td>192.168.0.101</td></tr>
+    <tr><td>YamBMS-2</td><td>yambms-2</td><td>String-2</td><td>JK-BMS 3 / JK-BMS 4</td><td>192.168.0.21</td></tr>
+  </table>
+</div>
+
+<h2 id="ha">6. Home Assistant Notes</h2>
+<div class="card">
+  <h3>HA API Access (from Pi SSH)</h3>
+  <pre><code>TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJkMDZlOGQxODU0MzA0ODdhYThlZWFmNDg2MGQ0NTNkNSIsImlhdCI6MTc4MjQxNTg5OCwiZXhwIjoyMDk3Nzc1ODk4fQ.4-hE8xl3G0SUFJYr3vfWKffNS5IiIXxvOn4fcQDrA-8"
+curl -s -H "Authorization: Bearer $TOKEN" "http://192.168.1.13:8123/api/states"</code></pre>
+  <p>Token is now saved permanently in <code>~/.bashrc</code> on the Pi.</p>
+
+  <h3>Dashboard file location</h3>
+  <pre><code>/usr/share/hassio/homeassistant/.storage/lovelace</code></pre>
+
+  <h3>YamBMS v1.6.0 entity ID changes vs v1.5.8</h3>
+  <p>When upgrading from v1.5.8 to v1.6.0, BMS entities move to separate sub-devices:</p>
+  <table>
+    <tr><th>Old (v1.5.8)</th><th>New (v1.6.0)</th></tr>
+    <tr><td><code>sensor.yambms_1_string_1_jk_bms_1_state_of_charge</code></td><td><code>sensor.jk_bms_1_battery_soc</code></td></tr>
+    <tr><td><code>sensor.yambms_1_string_1_jk_bms_1_capacity_remaining</code></td><td><code>sensor.jk_bms_1_battery_capacity_remaining</code></td></tr>
+    <tr><td><code>binary_sensor.yambms_1_string_1_esp32_online_status</code></td><td><code>binary_sensor.yambms_1_board_online_status</code></td></tr>
+    <tr><td><code>binary_sensor.yambms_1_string_1_canbus_1_status</code></td><td><code>binary_sensor.canbus_1_status</code></td></tr>
+  </table>
+  <p>Use the Pi shell script to bulk update the lovelace file when upgrading YamBMS-2.</p>
+
+  <h3>HA migration when replacing device MAC</h3>
+  <p>When flashing a new device with same hostname: HA shows "Device conflict" → choose <strong>Migrate configuration to new device</strong>.</p>
+</div>
+
+<h2 id="backups">7. Backups</h2>
+<table>
+  <tr><th>File</th><th>Location</th><th>What it is</th></tr>
+  <tr><td>yambms-1-JK1-2-Oct2025-LIVE.bin</td><td>C:\Users\osagk\Desktop\Dev\esphome-yambms\0_BACKUP\</td><td>True live YamBMS-1 backup (Oct 16 2025)</td></tr>
+  <tr><td>yambms-2-JK3-4-Oct2025-LIVE.bin</td><td>0_BACKUP\</td><td>True live YamBMS-2 backup (Oct 14 2025)</td></tr>
+  <tr><td>yambms-1-Oct2025-v1.5.8-PI-LIVE.bin</td><td>/home/chaosnature/esphome-yambms/firmware/</td><td>Pi compiled backup YamBMS-1</td></tr>
+  <tr><td>yambms-2-Oct2025-v1.5.8-PI-LIVE.bin</td><td>/home/chaosnature/esphome-yambms/firmware/</td><td>Pi compiled backup YamBMS-2</td></tr>
+  <tr><td>lovelace.backup-20260625</td><td>/usr/share/hassio/homeassistant/.storage/</td><td>HA dashboard backup</td></tr>
+</table>
+
+<h2 id="known">8. Known Issues</h2>
+<div class="danger">
+  <strong>BMS4 Cell 13 low voltage: 3.525V</strong> vs others at ~3.58V (59mV delta). Possible bad cell or connection. Monitor closely — may need physical inspection.
+</div>
+<div class="warning">
+  <strong>Safe mode counter:</strong> YamBMS-1 shows "Last reset too quick; invoke in 7 restarts" due to multiple reflashes today. Will trigger safe mode at 10. Will reset itself after a clean uptime period.
+</div>
+<div class="warning">
+  <strong>Display FAILED:</strong> AtomS3 display shows "display is marked FAILED: unspecified" — GPIO33/34 PSRAM conflict. Non-critical, CAN bus and BLE working fine.
+</div>
+<div class="warning">
+  <strong>Decimal precision:</strong> Some sensor values show excessive decimals e.g. -6.08000040054321. Fix: add accuracy_decimals: 2 to sensor configs in future compile.
+</div>
+
+<h2 id="pending">9. Pending Tasks</h2>
+<table>
+  <tr><th>Task</th><th>Priority</th><th>Notes</th></tr>
+  <tr><td>Test drift fix trigger</td><td><span class="badge badge-red">HIGH</span></td><td>Watch logs overnight for [I][soc_fix] messages when batteries reach float</td></tr>
+  <tr><td>Flash YamBMS-2 with v1.6.0</td><td><span class="badge badge-orange">MEDIUM</span></td><td>Create YamBMS_STRING2_TEST.yaml first. Plan HA entity migration for String-2.</td></tr>
+  <tr><td>Fix decimal precision</td><td><span class="badge badge-orange">MEDIUM</span></td><td>Add accuracy_decimals: 2 to power/current/voltage sensors</td></tr>
+  <tr><td>Fix display FAILED error</td><td><span class="badge badge-orange">MEDIUM</span></td><td>Investigate GPIO33/34 PSRAM conflict on AtomS3</td></tr>
+  <tr><td>Investigate BMS4 cell 13</td><td><span class="badge badge-orange">MEDIUM</span></td><td>3.525V vs 3.58V — 59mV delta, possible bad cell</td></tr>
+  <tr><td>Apply deprecated sensor renames</td><td><span class="badge badge-blue">LOW</span></td><td>power_tube_temperature → mosfet_temperature etc. Plan HA migration first.</td></tr>
+  <tr><td>Create master compile script for YamBMS-2</td><td><span class="badge badge-blue">LOW</span></td><td>Same as STRING1 but with String-2 substitutions</td></tr>
+</table>
+
+<div class="success">
+  ✅ <strong>Session complete June 25 2026.</strong> YamBMS-1 successfully upgraded to v1.6.0 with coulomb drift fix. HA dashboard fully restored. Drift fix running in kitchen — monitor logs overnight.
+</div>
+
+</body>
+</html>

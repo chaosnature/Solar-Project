@@ -1,0 +1,70 @@
+﻿# YamBMS SoC Coulomb Drift Fix
+# Developed: June 25 2026 | YamBMS v1.6.0 | ESPHome 2025.11.0 | M5Stack AtomS3
+
+## Problem
+JK-BMS coulomb counter drifts over time, causing SoC to show incorrect values
+(e.g. 85% when battery is actually full). The BMS needs an anchor event to
+recalibrate its coulomb counter to 100%.
+
+## Root Cause
+The JK-BMS recalibrates SoC when the total_battery_capacity number entity is
+changed. YamBMS does not trigger this automatically.
+
+## Solution
+A new package file monitors voltage, current and SoC. When all three indicate
+a full charge held for 30 seconds, it toggles the capacity number to force
+recalibration.
+
+## Files Modified
+
+NEW FILE:
+  packages/bms/bms_soc_drift_fix_JK_BLE.yaml
+
+MODIFIED - packages/bms/bms_sensors_JK_BLE_standard.yaml
+  Added id: bms${bms_id}_total_capacity_number to the total_battery_capacity
+  number entity (line ~269) so it can be referenced by the fix.
+
+MODIFIED - packages/bms/bms_combine_JK_BLE_standard.yaml
+  Added include for the new drift fix package.
+
+## Trigger Conditions (all three must be true for 30 seconds)
+  - Battery voltage >= 56.4V (just below float voltage of 56.6V)
+  - Charge current <= 2A (nearly stopped charging)
+  - SoC >= 98%
+
+Reset condition: voltage drops below 55.0V (new discharge cycle started)
+
+## How It Works
+When triggered, the fix toggles total_battery_capacity from 95Ah to 94Ah
+then back to 95Ah. This change event causes the JK-BMS to recalibrate its
+coulomb counter to 100% SoC, correcting any drift.
+
+## System Voltages (adjust for your system)
+  Bulk:             57.0V
+  Float:            56.6V
+  Rebulk:           51.8V
+  Drift fix trigger: 56.4V (just below float - only reachable when full)
+  Drift fix reset:   55.0V
+
+## Log Output
+When triggered:
+  [I][soc_fix]: BMS1: coulomb anchor triggered V=56.xx I=x.xx SoC=99%
+
+When reset:
+  [I][soc_fix]: BMS1: anchor reset, new cycle V=xx.xx
+
+## Device Map
+  YamBMS-1: 192.168.0.101  JK1+JK2 (Kitchen) BMS1: C8:47:80:08:20:D0 BMS2: C8:47:80:09:AB:10
+  YamBMS-2: 192.168.0.21   JK3+JK4 (Shed)    BMS3: C8:47:80:0F:F4:B5 BMS4: C8:47:80:11:B8:62
+  HA Server: 192.168.1.13:8123
+
+## Compile Pipeline (Windows)
+  Working dir: C:\Users\osagk\Desktop\Dev\esphome-yambms\
+  python fix_both.py
+  python compile_test.py YamBMS_STRING1_TEST.yaml 192.168.0.101
+
+## Important Notes
+  - Voltage thresholds MUST be adjusted to match your bulk/float voltages
+  - This fix is per-BMS - each BMS has its own globals and trigger
+  - Tested on YamBMS v1.6.0 with ESPHome 2025.11.0 on M5Stack AtomS3
+  - The fix is non-destructive - toggles capacity by 1Ah temporarily only

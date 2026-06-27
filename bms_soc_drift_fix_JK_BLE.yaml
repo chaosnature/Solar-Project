@@ -1,0 +1,64 @@
+# SoC Coulomb Drift Fix
+# Triggers when BMS reaches full charge conditions
+# Toggles total_battery_capacity to force coulomb counter recalibration
+# Applies independently per BMS
+
+globals:
+  - id: bms${bms_id}_soc_anchor_counter
+    type: int
+    restore_value: false
+    initial_value: '0'
+  - id: bms${bms_id}_soc_anchored
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+
+interval:
+  - interval: 5s
+    then:
+      - lambda: |-
+          // Skip if BMS not online
+          if (!id(bms${bms_id}_online_status).state) {
+            id(bms${bms_id}_soc_anchor_counter) = 0;
+            id(bms${bms_id}_soc_anchored) = false;
+            return;
+          }
+
+          float voltage  = id(bms${bms_id}_total_voltage).state;
+          float current  = id(bms${bms_id}_current).state;
+          float soc      = id(bms${bms_id}_state_of_charge).state;
+
+          if (isnan(voltage) || isnan(current) || isnan(soc)) return;
+
+          // Full charge conditions
+          // voltage >= 56.4V, current <= 2A, SoC >= 98%
+          bool near_full = (voltage >= 56.4f) && (current <= 2.0f) && (soc >= 98.0f);
+
+          if (near_full) {
+            id(bms${bms_id}_soc_anchor_counter)++;
+
+            // Hold 30 seconds (6 x 5s) before triggering
+            if (id(bms${bms_id}_soc_anchor_counter) >= 6 && !id(bms${bms_id}_soc_anchored)) {
+              // Toggle capacity to force BMS coulomb counter recalibration
+              auto call1 = id(bms${bms_id}_total_capacity_number).make_call();
+              call1.set_value(94.0f);
+              call1.perform();
+
+              // Restore after 2 seconds
+              delay(2000);
+              auto call2 = id(bms${bms_id}_total_capacity_number).make_call();
+              call2.set_value(95.0f);
+              call2.perform();
+
+              ESP_LOGI("soc_fix", "BMS${bms_id}: coulomb anchor triggered V=%.2f I=%.2f SoC=%.0f%%",
+                       voltage, current, soc);
+              id(bms${bms_id}_soc_anchored) = true;
+            }
+          } else {
+            id(bms${bms_id}_soc_anchor_counter) = 0;
+            // Reset anchor flag when voltage drops (new discharge cycle started)
+            if (id(bms${bms_id}_soc_anchored) && voltage < 55.0f) {
+              id(bms${bms_id}_soc_anchored) = false;
+              ESP_LOGI("soc_fix", "BMS${bms_id}: anchor reset, new cycle V=%.2f", voltage);
+            }
+          }
