@@ -146,9 +146,9 @@ packages:
       # - path: 'packages/board/board_ESP32-C3_DevKitM-1.yaml'
       # - path: 'packages/board/board_ESP32-C3_ETH01-EVO.yaml'
       #- path: 'packages/board/board_ESP32-S3_AtomS3_ili9xxx.yaml'
-        vars:
-          display_auto_next_page_interval: '5s'
-          display_rotation: '0'
+      #  vars:
+      #    display_auto_next_page_interval: '5s'
+      #    display_rotation: '0'
       # - path: 'packages/board/board_ESP32-S3_DevKitC-1_LED-38.yaml'
       # - path: 'packages/board/board_ESP32-S3_DevKitC-1_LED-48.yaml'
       # - path: 'packages/board/board_ESP32-S3_LilyGo-T-Connect.yaml'
@@ -344,5 +344,6 @@ switch:
     restore_mode: RESTORE_DEFAULT_ON
   - id: !extend yambms1_switch_auto_cvl
     restore_mode: RESTORE_DEFAULT_ON
+
 
 
