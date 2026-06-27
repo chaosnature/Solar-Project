@@ -157,10 +157,10 @@ packages:
       # - path: 'packages/board/board_ESP32-S3_XIAO.yaml'
       # - path: 'packages/board/board_ESP32-S3_YBoard.yaml'
 
-      - path: 'packages/board/board_ESP32-S3_AtomS3.yaml' # 'packages/board/board_ESP32-S3_AtomS3R.yaml'
-      #   vars:
-      #     display_auto_next_page_interval: '5s'
-      #     display_rotation: '0' # 0/90/180/270 rotation angle in degrees
+      - path: 'packages/board/board_ESP32-S3_AtomS3.yaml'
+        vars:
+          display_auto_next_page_interval: '5s'
+          display_rotation: '0'
 
       # # LilyGo T-Connect Pro - Board
       # - path: 'packages/board/board_ESP32-S3_LilyGo-T-Connect-Pro.yaml'
@@ -344,6 +344,7 @@ switch:
     restore_mode: RESTORE_DEFAULT_ON
   - id: !extend yambms1_switch_auto_cvl
     restore_mode: RESTORE_DEFAULT_ON
+
 
 
 
