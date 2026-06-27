@@ -29,3 +29,15 @@ Write-Host "Done"
 
 Write-Host "=== Step 4: Compile ===" -ForegroundColor Cyan
 python compile_test.py $YamlFile
+
+# Patch total_battery_capacity number entity to add id in both cache folders
+Write-Host "=== Step 2b: Patch total_battery_capacity id ===" -ForegroundColor Cyan
+Get-ChildItem -Recurse -Path ".esphome\packages" -Filter "bms_sensors_JK_BLE_standard.yaml" -ErrorAction SilentlyContinue | ForEach-Object {
+    $content = Get-Content $_.FullName -Raw
+    if ($content -notmatch 'bms\$\{bms_id\}_total_capacity_number') {
+        $content = $content -replace '    total_battery_capacity:\r?\n      name:', "    total_battery_capacity:`r`n      id: bms`${bms_id}_total_capacity_number`r`n      name:"
+        $content = $content -replace '    total_battery_capacity:\r?\n      device_id:', "    total_battery_capacity:`r`n      id: bms`${bms_id}_total_capacity_number`r`n      device_id:"
+        $content | Set-Content $_.FullName
+        Write-Host "Patched total_capacity_number id: $($_.FullName)"
+    }
+}
