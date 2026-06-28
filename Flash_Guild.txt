@@ -17,6 +17,11 @@ esphome upload YamBMS_STRING1_TEST.yaml --file "C:\Users\osagk\Documents\0_My_Pr
 python -m esptool --port COM7 write-flash 0x0 "C:\Users\osagk\Documents\0_My_Projects\Solar_Project\AI_Assist_Project\.esphome\build\yambms-1\.pioenvs\yambms-1\firmware.factory.bin"
 
 
+# Compiling using patch_and_compile.ps1 V2
+Unblock-File ".\patch_and_compile.ps1"
+.\patch_and_compile.ps1 YamBMS_STRING2_ORIGINAL.yaml
+
+
 # Cloude OTA Flash
 Copy-Item ".esphome\build\yambms-1\.pioenvs\yambms-1\firmware.ota.bin" "0_BACKUP\firmware\yambms-1-Jun2026-v1.5.8-KITCHEN-DRIFTFIX.bin"
 Copy-Item ".esphome\build\yambms-1\.pioenvs\yambms-1\firmware.factory.bin" "0_BACKUP\firmware\yambms-1-Jun2026-v1.5.8-KITCHEN-DRIFTFIX.factory.bin"

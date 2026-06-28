@@ -21,22 +21,36 @@ foreach ($file in $files) {
     $content = Get-Content $file.FullName -Raw
     # Pin jk-bms to 2.5.0
     $content = $content -replace 'github://syssi/esphome-jk-bms@main', 'github://syssi/esphome-jk-bms@2.5.0'
-    # Add id to total_battery_capacity number entity (e87f1c82 style - has name: next)
+    # Add id to total_battery_capacity number entity
     if ($content -notmatch 'bms\$\{bms_id\}_total_capacity_number') {
         $content = $content -replace '    total_battery_capacity:\r?\n      name:', "    total_battery_capacity:`r`n      id: bms`${bms_id}_total_capacity_number`r`n      name:"
-        # Add id to total_battery_capacity number entity (a3a4c2d8 style - has device_id: next)
         $content = $content -replace '    total_battery_capacity:\r?\n      device_id:', "    total_battery_capacity:`r`n      id: bms`${bms_id}_total_capacity_number`r`n      device_id:"
         Write-Host "Patched total_capacity_number id: $($file.FullName)"
     }
     [System.IO.File]::WriteAllText($file.FullName, $content)
     Write-Host "Patched: $($file.FullName)"
 }
-if ($files.Count -eq 0) { Write-Host "No cached files found yet (run once to hydrate cache, then run again)" }
+if ($files.Count -eq 0) { Write-Host "No cached files found yet" }
 
 Write-Host "=== Step 4: Git commit to fix CMake head-ref error ===" -ForegroundColor Cyan
 git add . 2>&1 | Out-Null
 git commit -m "pre-compile patch" 2>&1 | Out-Null
 Write-Host "Done"
 
-Write-Host "=== Step 5: Compile ===" -ForegroundColor Cyan
+Write-Host "=== Step 5: Get build name and create head-ref files for ALL build dirs ===" -ForegroundColor Cyan
+$buildDirs = Get-ChildItem -Path ".esphome\build" -Directory -ErrorAction SilentlyContinue
+foreach ($dir in $buildDirs) {
+    $headRefDir = "$($dir.FullName)\.pioenvs\$($dir.Name)\CMakeFiles\git-data"
+    $bootRefDir = "$($dir.FullName)\.pioenvs\$($dir.Name)\bootloader\CMakeFiles\git-data"
+    New-Item -ItemType Directory -Force -Path $headRefDir | Out-Null
+    New-Item -ItemType Directory -Force -Path $bootRefDir | Out-Null
+    $gitRef = git rev-parse HEAD 2>$null
+    if ($gitRef) {
+        $gitRef | Set-Content "$headRefDir\head-ref"
+        $gitRef | Set-Content "$bootRefDir\head-ref"
+        Write-Host "Created head-ref for: $($dir.Name)"
+    }
+}
+
+Write-Host "=== Step 6: Compile ===" -ForegroundColor Cyan
 python compile_test.py $YamlFile
