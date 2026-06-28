@@ -1,4 +1,4 @@
-﻿# YamBMS SoC Coulomb Drift Fix
+# YamBMS SoC Coulomb Drift Fix
 **Developed:** June 2026 | YamBMS v1.5.8+ | ESPHome 2025.11.0 | M5Stack AtomS3-Lite
 
 ---

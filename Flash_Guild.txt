@@ -22,10 +22,14 @@ Unblock-File ".\patch_and_compile.ps1"
 .\patch_and_compile.ps1 YamBMS_STRING2_ORIGINAL.yaml
 
 
-# Cloude OTA Flash
+# Claude OTA Flash
 Copy-Item ".esphome\build\yambms-1\.pioenvs\yambms-1\firmware.ota.bin" "0_BACKUP\firmware\yambms-1-Jun2026-v1.5.8-KITCHEN-DRIFTFIX.bin"
+
 Copy-Item ".esphome\build\yambms-1\.pioenvs\yambms-1\firmware.factory.bin" "0_BACKUP\firmware\yambms-1-Jun2026-v1.5.8-KITCHEN-DRIFTFIX.factory.bin"
 esphome upload YamBMS_STRING1_ORIGINAL.yaml --file ".esphome\build\yambms-1\.pioenvs\yambms-1\firmware.ota.bin" --device 192.168.0.101
+
+# Claude OTA Flash String 2
+esphome upload YamBMS_STRING2_ORIGINAL.yaml --file ".esphome\build\yambms-2\.pioenvs\yambms-2\firmware.ota.bin" --device 192.168.0.21
 
 
 # Log Test
