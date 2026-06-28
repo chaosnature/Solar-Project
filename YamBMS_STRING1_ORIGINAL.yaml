@@ -132,7 +132,7 @@ packages:
   board:
     url: https://github.com/Sleeper85/esphome-yambms
     ref: 1.5.8
-    refresh: 0s
+    refresh: 365d
     files:
       #- path: 'packages/board/board_ESP32_Generic.yaml'
       # - path: 'packages/board/board_ESP32_DevKit-V1.yaml'
@@ -172,7 +172,7 @@ packages:
   board_options:
     url: https://github.com/Sleeper85/esphome-yambms
     ref: 1.5.8
-    refresh: 0s
+    refresh: 365d
     files:
       # UART 1 (uart_id: uart_esp_1)
       # - path: 'packages/board/board_options_itf_uart_esp_1.yaml'
@@ -223,7 +223,7 @@ packages:
   bms:
     url: https://github.com/Sleeper85/esphome-yambms
     ref: 1.5.8
-    refresh: 0s
+    refresh: 365d
     files:
       # BMS 1
       - path: 'packages/bms/bms_combine_JK_BLE_standard.yaml'
@@ -255,7 +255,7 @@ packages:
   yambms:
     url: https://github.com/Sleeper85/esphome-yambms
     ref: 1.5.8
-    refresh: 0s
+    refresh: 365d
     files:
       - path: 'packages/yambms/yambms.yaml'
 
@@ -268,7 +268,7 @@ packages:
   canbus:
     url: https://github.com/Sleeper85/esphome-yambms
     ref: 1.5.8
-    refresh: 0s
+    refresh: 365d
     files:
       - path: 'packages/yambms/yambms_canbus.yaml' # yambms_canbus_web_server.yaml
         vars:
@@ -288,7 +288,7 @@ packages:
   # rs485_pylon:
   #   url: https://github.com/Sleeper85/esphome-yambms
   #   ref: 1.5.8
-  #   refresh: 0s
+  #   refresh: 365d
   #   files:
   #     - path: 'packages/yambms/yambms_rs485_pylon.yaml' # yambms_rs485_pylon_web_server.yaml
   #       vars:
@@ -307,7 +307,7 @@ packages:
   debug:
     url: https://github.com/Sleeper85/esphome-yambms
     ref: 1.5.8
-    refresh: 0s
+    refresh: 365d
     files:
       - path: packages/base/device_debug_ESP32.yaml
       # - path: packages/base/device_debug_ESP32_PSRAM.yaml
@@ -437,4 +437,6 @@ interval:
             id(bms2_restore_pending) = false;
             ESP_LOGI("soc_fix", "BMS2: capacity restored to 95Ah");
           }
+
+
 

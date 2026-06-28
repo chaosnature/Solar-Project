@@ -24,7 +24,7 @@ $yamlContent = $yamlContent -replace 'ref:\s*main', 'ref: 1.5.8'
 $yamlContent | Set-Content $YamlFile
 Write-Host "YAML constraints updated." -ForegroundColor Green
 
-Write-Host "=== Step 2: Forcing Downstream Fetch Strategy ===" -ForegroundColor Cyan
+Write-Host "=== Step 2: SKIPPED - patch first ===" -ForegroundColor Cyan
 Write-Host "Running initial esphome config check to force cache hydration..." -ForegroundColor Yellow
 
 # Temporarily ease ErrorActionPreference for the native tool call to ignore stdout/stderr stream casting bugs
@@ -89,3 +89,4 @@ if (Test-Path "compile_test.py") {
     Write-Host "compile_test.py hook not found. Executing direct ESPHome compiler fallback..." -ForegroundColor Yellow
     esphome compile $YamlFile
 }
+
