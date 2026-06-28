@@ -287,7 +287,7 @@ packages:
 
   # rs485_pylon:
   #   url: https://github.com/Sleeper85/esphome-yambms
-  #   ref: main
+  #   ref: 1.5.8
   #   refresh: 0s
   #   files:
   #     - path: 'packages/yambms/yambms_rs485_pylon.yaml' # yambms_rs485_pylon_web_server.yaml
