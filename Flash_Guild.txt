@@ -3,6 +3,16 @@ python3 /home/chaosnature/esphome-yambms/fix_ha_dashboard.py --dry-run
 python3 fix_ha_dashboard.py --dry-run   # preview
 python3 fix_ha_dashboard.py             # apply + restart HA
 
+
+# Compiling using patch_and_compile.ps1 V2
+Unblock-File ".\patch_and_compile.ps1"
+.\patch_and_compile.ps1 YamBMS_STRING2_ORIGINAL.yaml
+
+OR
+# compile.bat just calls patch_and_compile.ps1 with -ExecutionPolicy Bypass
+compile.bat YamBMS_STRING2_ORIGINAL.yaml
+
+
 # To flash from scratch  to Com7  - GOOD
 python -m esptool --port COM7 write-flash 0x0 "C:\Users\osagk\Documents\0_My_Projects\Solar_Project\AI_Assist_Project\0_BACKUP\firmware\yambms-1-Jun2026-v1.5.8-KITCHEN-WORKING.factory.bin"
 
@@ -17,9 +27,6 @@ esphome upload YamBMS_STRING1_TEST.yaml --file "C:\Users\osagk\Documents\0_My_Pr
 python -m esptool --port COM7 write-flash 0x0 "C:\Users\osagk\Documents\0_My_Projects\Solar_Project\AI_Assist_Project\.esphome\build\yambms-1\.pioenvs\yambms-1\firmware.factory.bin"
 
 
-# Compiling using patch_and_compile.ps1 V2
-Unblock-File ".\patch_and_compile.ps1"
-.\patch_and_compile.ps1 YamBMS_STRING2_ORIGINAL.yaml
 
 
 # Claude OTA Flash
@@ -34,3 +41,4 @@ esphome upload YamBMS_STRING2_ORIGINAL.yaml --file ".esphome\build\yambms-2\.pio
 
 # Log Test
 esphome logs YamBMS_STRING1_ORIGINAL.yaml --device 192.168.0.101
+esphome logs YamBMS_STRING2_ORIGINAL.yaml --device 192.168.0.21
