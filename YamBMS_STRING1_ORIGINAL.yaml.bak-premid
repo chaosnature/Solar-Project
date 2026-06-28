@@ -336,14 +336,6 @@ external_components:
     refresh: 1d
 
 globals:
-  - id: bms1_mid_anchored
-    type: bool
-    restore_value: false
-    initial_value: 'false'
-  - id: bms2_mid_anchored
-    type: bool
-    restore_value: false
-    initial_value: 'false'
   - id: bms1_soc_anchor_counter
     type: int
     restore_value: false
@@ -490,48 +482,5 @@ interval:
               }
             }
           }
-
-  - interval: 5s
-    then:
-      - lambda: |-
-          // BMS1 mid anchor (avg cell ~3.70V, light load only)
-          if (id(bms1_online_status).state) {
-            float avg = id(bms1_average_cell_voltage).state;
-            float i   = id(bms1_current).state;
-            if (!isnan(avg) && !isnan(i)) {
-              bool mid_rest = (avg >= 3.68f) && (avg <= 3.72f) && (i >= -2.0f) && (i <= 2.0f);
-              if (mid_rest && !id(bms1_restore_pending) && !id(bms1_mid_anchored)) {
-                auto call = id(bms1_total_capacity_number).make_call();
-                call.set_value(94.0f);
-                call.perform();
-                id(bms1_restore_pending) = true;
-                id(bms1_mid_anchored) = true;
-                ESP_LOGI("soc_fix", "BMS1: MID anchor triggered avg=%.3fV I=%.2fA", avg, i);
-              }
-              if (avg < 3.60f || avg > 3.80f) {
-                id(bms1_mid_anchored) = false;
-              }
-            }
-          }
-          // BMS2 mid anchor (avg cell ~3.70V, light load only)
-          if (id(bms2_online_status).state) {
-            float avg = id(bms2_average_cell_voltage).state;
-            float i   = id(bms2_current).state;
-            if (!isnan(avg) && !isnan(i)) {
-              bool mid_rest = (avg >= 3.68f) && (avg <= 3.72f) && (i >= -2.0f) && (i <= 2.0f);
-              if (mid_rest && !id(bms2_restore_pending) && !id(bms2_mid_anchored)) {
-                auto call = id(bms2_total_capacity_number).make_call();
-                call.set_value(94.0f);
-                call.perform();
-                id(bms2_restore_pending) = true;
-                id(bms2_mid_anchored) = true;
-                ESP_LOGI("soc_fix", "BMS2: MID anchor triggered avg=%.3fV I=%.2fA", avg, i);
-              }
-              if (avg < 3.60f || avg > 3.80f) {
-                id(bms2_mid_anchored) = false;
-              }
-            }
-          }
-
 
 
