@@ -330,6 +330,40 @@ globals:
       </div>
     </div>
 
+ <!-- 4. RGB and display Settings -->
+<div class="card">
+  <h3>Board Selection</h3>
+  <p style="font-size:.88rem;margin-bottom:10px;">The board package controls whether the chip uses the RGB LED or the display. Only ONE board line should be uncommented at a time in the YAML packages section.</p>
+  <table>
+    <tr><th>Chip</th><th>Board Package</th><th>Features</th><th>Status</th></tr>
+    <tr><td>AtomS3-Lite</td><td><code>board_ESP32-S3_AtomS3-Lite.yaml</code></td><td>RGB LED, no display</td><td><span class="badge badge-green">PRODUCTION — both strings</span></td></tr>
+    <tr><td>AtomS3</td><td><code>board_ESP32-S3_AtomS3.yaml</code></td><td>Display, no RGB</td><td><span class="badge badge-red">SPARE CHIP — v1.6.0 only, charge/discharge issue unresolved</span></td></tr>
+    <tr><td>AtomS3R</td><td><code>board_ESP32-S3_AtomS3R.yaml</code></td><td>Display + PSRAM</td><td><span class="badge badge-orange">SPARE CHIP alternative variant</span></td></tr>
+  </table>
+  <pre><code><span class="comment"># AtomS3-Lite — RGB LED, no display — PRODUCTION (both strings)</span>
+- path: 'packages/board/board_ESP32-S3_AtomS3-Lite.yaml'
+
+<span class="comment"># AtomS3 — display, no RGB — spare chip only (v1.6.0, charge/discharge unresolved)</span>
+#- path: 'packages/board/board_ESP32-S3_AtomS3.yaml'
+
+<span class="comment"># AtomS3R — display + PSRAM variant (alternative to AtomS3)</span>
+#- path: 'packages/board/board_ESP32-S3_AtomS3R.yaml'
+
+<span class="comment"># CAN bus interface — required for both strings, leave uncommented</span>
+- path: 'packages/board/board_options_itf_canbus_esp32_can.yaml'</code></pre>
+
+  <h3>Compiling Any String</h3>
+  <p style="font-size:.88rem;margin-bottom:10px;"><code>compile.bat</code> works for any YAML. Before compiling ensure the correct board package, static IP, hostname and BMS MACs are set in the YAML.</p>
+  <pre><code><span class="comment"># Compile String-1</span>
+compile.bat YamBMS_STRING1_ORIGINAL.yaml
+
+<span class="comment"># Compile String-2</span>
+compile.bat YamBMS_STRING2_ORIGINAL.yaml
+
+<span class="comment"># Compile any new string — update board, IP, hostname, BMS MACs first</span>
+compile.bat YamBMS_STRINGx_ORIGINAL.yaml</code></pre>
+</div>
+
     <!-- 5. How to Flash -->
     <div class="section" id="flash">
       <div class="section-title">5. How to Flash a Device</div>
