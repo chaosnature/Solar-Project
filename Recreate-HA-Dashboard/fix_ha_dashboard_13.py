@@ -33,6 +33,10 @@ REPLACEMENTS = [
     ('sensor.yambms_1_string_1_',           'sensor.kitchen_yambms_1_string_1_'),
     ('switch.yambms_1_string_1_',           'switch.kitchen_yambms_1_string_1_'),
 
+    # String-1: battery_capacity_remaining -> capacity_remaining (v1.5.8 entity name)
+    ('sensor.kitchen_yambms_1_string_1_jk_bms_1_battery_capacity_remaining', 'sensor.kitchen_yambms_1_string_1_jk_bms_1_capacity_remaining'),
+    ('sensor.kitchen_yambms_1_string_1_jk_bms_2_battery_capacity_remaining', 'sensor.kitchen_yambms_1_string_1_jk_bms_2_capacity_remaining'),
+
     # String-2: missing kitchen prefix
     ('binary_sensor.yambms_2_string_2_',    'binary_sensor.kitchen_yambms_2_string_2_'),
     ('sensor.yambms_2_string_2_',           'sensor.kitchen_yambms_2_string_2_'),
@@ -70,3 +74,4 @@ else:
     print('Restarting HA...')
     subprocess.run(['ha', 'core', 'restart'], check=False)
     print('Done — wait 2-3 minutes then refresh dashboard.')
+
