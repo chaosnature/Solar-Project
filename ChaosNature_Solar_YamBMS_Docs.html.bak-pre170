@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChaosNature Solar - YamBMS Documentation</title>
+<style>
+  :root {
+    --bg:       #0a0c12;
+    --surface:  #13161f;
+    --surface2: #1c2030;
+    --border:   #252a3a;
+    --cyan:     #00d4ff;
+    --orange:   #ffa040;
+    --green:    #00e87a;
+    --red:      #ff4c4c;
+    --yellow:   #ffe066;
+    --text:     #dde3f0;
+    --muted:    #7a8499;
+    --font-mono: 'Courier New', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding: 0 0 60px; }
+
+  /* ── Header ── */
+  .site-header { background: linear-gradient(135deg, #0d1220 0%, #111827 100%); border-bottom: 2px solid var(--cyan); padding: 28px 40px 22px; display: flex; align-items: center; gap: 18px; }
+  .site-header .logo { font-size: 2rem; }
+  .site-header h1 { font-size: 1.55rem; color: var(--cyan); letter-spacing: .04em; font-weight: 700; }
+  .site-header .meta { font-size: .8rem; color: var(--muted); margin-top: 3px; }
+
+  /* ── Layout ── */
+  .layout { display: grid; grid-template-columns: 230px 1fr; gap: 0; max-width: 1280px; margin: 0 auto; }
+  .sidebar { position: sticky; top: 0; height: 100vh; overflow-y: auto; background: var(--surface); border-right: 1px solid var(--border); padding: 24px 0; }
+  .sidebar-label { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: .12em; padding: 14px 20px 4px; }
+  .sidebar a { display: block; padding: 7px 20px; color: var(--text); text-decoration: none; font-size: .85rem; border-left: 3px solid transparent; transition: all .15s; }
+  .sidebar a:hover { color: var(--cyan); border-left-color: var(--cyan); background: #ffffff08; }
+  .main { padding: 36px 40px; }
+
+  /* ── Sections ── */
+  .section { margin-bottom: 48px; }
+  .section-title { font-size: 1.2rem; color: var(--orange); font-weight: 700; border-left: 4px solid var(--orange); padding-left: 12px; margin-bottom: 18px; }
+  h3 { color: var(--green); font-size: .95rem; margin: 20px 0 8px; text-transform: uppercase; letter-spacing: .06em; }
+
+  /* ── Cards ── */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; margin-bottom: 14px; }
+  .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .card-grid .card { margin: 0; }
+  .card ul { padding-left: 18px; font-size: .88rem; }
+  .card ul li { margin-bottom: 4px; }
+
+  /* ── Alerts ── */
+  .alert { border-radius: 7px; padding: 13px 16px; margin-bottom: 14px; font-size: .87rem; display: flex; gap: 10px; align-items: flex-start; }
+  .alert-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+  .alert-danger  { background: #1f0808; border: 1px solid var(--red);    }
+  .alert-warning { background: #1a1200; border: 1px solid var(--orange);  }
+  .alert-success { background: #041410; border: 1px solid var(--green);   }
+  .alert-info    { background: #04111a; border: 1px solid var(--cyan);    }
+
+  /* ── Badges ── */
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: .72rem; font-weight: 700; letter-spacing: .04em; }
+  .badge-green  { background: #00e87a22; color: var(--green);  border: 1px solid var(--green);  }
+  .badge-orange { background: #ffa04022; color: var(--orange); border: 1px solid var(--orange); }
+  .badge-red    { background: #ff4c4c22; color: var(--red);    border: 1px solid var(--red);    }
+  .badge-cyan   { background: #00d4ff22; color: var(--cyan);   border: 1px solid var(--cyan);   }
+  .badge-yellow { background: #ffe06622; color: var(--yellow); border: 1px solid var(--yellow); }
+
+  /* ── Code ── */
+  code { background: var(--surface2); color: var(--cyan); padding: 1px 6px; border-radius: 4px; font-family: var(--font-mono); font-size: .85em; }
+  pre  { background: var(--surface2); border-left: 3px solid var(--cyan); border-radius: 7px; padding: 16px 18px; overflow-x: auto; margin: 10px 0; }
+  pre code { background: none; color: var(--text); padding: 0; font-size: .83rem; }
+  .comment { color: #5a6a8a; }
+
+  /* ── Tables ── */
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: .85rem; }
+  th { background: var(--surface2); color: var(--cyan); padding: 9px 12px; text-align: left; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:hover td { background: #ffffff05; }
+
+  /* ── Anchor trigger table ── */
+  .trigger-table th { background: #141c2a; }
+  .trigger-top td:first-child  { color: var(--cyan);   font-weight: 600; }
+  .trigger-bot td:first-child  { color: var(--orange); font-weight: 600; }
+  .trigger-mid td:first-child  { color: var(--yellow); font-weight: 600; }
+
+  /* ── Steps ── */
+  .steps { counter-reset: step; list-style: none; padding: 0; }
+  .steps li { counter-increment: step; display: flex; gap: 12px; margin-bottom: 10px; font-size: .88rem; }
+  .steps li::before { content: counter(step); background: var(--cyan); color: #000; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .75rem; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── Status dot ── */
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+  .dot-green  { background: var(--green);  box-shadow: 0 0 6px var(--green);  }
+  .dot-orange { background: var(--orange); box-shadow: 0 0 6px var(--orange); }
+  .dot-red    { background: var(--red);    box-shadow: 0 0 6px var(--red);    }
+
+  @media(max-width: 768px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { position: static; height: auto; }
+    .main { padding: 20px; }
+    .card-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="site-header">
+  <div class="logo">⚡</div>
+  <div>
+    <h1>ChaosNature Solar — YamBMS Documentation</h1>
+    <div class="meta">Last updated: June 28 2026 &nbsp;|&nbsp; YamBMS v1.5.8 &nbsp;|&nbsp; ESPHome 2025.11.0 &nbsp;|&nbsp; Both strings stable</div>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- ══ SIDEBAR ══ -->
+  <nav class="sidebar">
+    <div class="sidebar-label">Navigation</div>
+    <a href="#system">1. System Overview</a>
+    <a href="#devices">2. Device Inventory</a>
+    <a href="#drift">3. Coulomb Drift Fix</a>
+    <a href="#jk-native">4. JK Native SOC Settings</a>
+    <a href="#flash">5. How to Flash</a>
+    <a href="#pipeline">6. Compile Pipeline</a>
+    <a href="#ha">7. Home Assistant</a>
+    <a href="#backups">8. Backups</a>
+    <a href="#v160">9. v1.6.0 Known Issue</a>
+    <a href="#known">10. Known Issues</a>
+    <a href="#pending">11. Pending Tasks</a>
+  </nav>
+
+  <!-- ══ MAIN ══ -->
+  <main class="main">
+
+    <!-- 1. System Overview -->
+    <div class="section" id="system">
+      <div class="section-title">1. System Overview</div>
+      <div class="card">
+        <p style="margin-bottom:14px;font-size:.9rem;">Two-string home solar battery system. Each string has 2x JK-BMS units managed by one YamBMS ESP32-S3 (AtomS3-Lite) over BLE. YamBMS aggregates BMS data and sends PYLON V2 CAN bus frames to a Solis 3kW inverter. Home Assistant (on Pi) monitors and controls everything.</p>
+        <div class="card-grid">
+          <div class="card">
+            <h3>String 1 — Kitchen</h3>
+            <ul>
+              <li>YamBMS-1 at <code>192.168.0.101</code></li>
+              <li>Chip MAC: <code>F4:12:FA:6C:42:C4</code></li>
+              <li>JK-BMS 1: <code>C8:47:80:08:20:D0</code></li>
+              <li>JK-BMS 2: <code>C8:47:80:09:AB:10</code></li>
+              <li>CAN bus → Solis inverter</li>
+              <li>Drift fix: top + bottom anchors ✅</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>String 2 — Shed</h3>
+            <ul>
+              <li>YamBMS-2 at <code>192.168.0.21</code></li>
+              <li>Chip MAC: <code>34:B7:DA:54:D5:8C</code></li>
+              <li>JK-BMS 3: <code>C8:47:80:0F:F4:B5</code> (JK-PB)</li>
+              <li>JK-BMS 4: <code>C8:47:80:11:B8:62</code> (JK-PB)</li>
+              <li>Drift fix: top + bottom + mid anchors ✅</li>
+              <li>JK native Charging Float Mode: ON (monitoring)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>System Voltages</h3>
+        <table>
+          <tr><th>Setting</th><th>Value</th><th>Notes</th></tr>
+          <tr><td>Bulk charge</td><td>57.0V</td><td>4.071V/cell × 14 cells</td></tr>
+          <tr><td>Float charge</td><td>56.6V</td><td>4.043V/cell</td></tr>
+          <tr><td>Rebulk</td><td>51.8V</td><td>3.700V/cell — rebulk trigger</td></tr>
+          <tr><td>Top anchor trigger</td><td>≥ 56.4V</td><td>Just below float</td></tr>
+          <tr><td>Top anchor reset</td><td>&lt; 55.0V</td><td>New discharge cycle confirmed</td></tr>
+          <tr><td>Bottom anchor trigger</td><td>≤ 48.0V</td><td>Near empty</td></tr>
+          <tr><td>Mid anchor trigger</td><td>3.68–3.72V avg cell</td><td>~51.5V pack, resting only (String-2 experimental)</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- 2. Device Inventory -->
+    <div class="section" id="devices">
+      <div class="section-title">2. Device Inventory</div>
+      <table>
+        <tr><th>Device</th><th>IP</th><th>MAC</th><th>Firmware</th><th>Status</th></tr>
+        <tr>
+          <td>YamBMS-1 (AtomS3-Lite)<br><small>Kitchen / String-1</small></td>
+          <td><code>192.168.0.101</code></td>
+          <td><code>F4:12:FA:6C:42:C4</code></td>
+          <td>ESPHome 2025.11.0<br>YamBMS 1.5.8 + drift fix</td>
+          <td><span class="dot dot-green"></span><span class="badge badge-green">LIVE</span></td>
+        </tr>
+        <tr>
+          <td>YamBMS-2 (AtomS3-Lite)<br><small>Shed / String-2</small></td>
+          <td><code>192.168.0.21</code></td>
+          <td><code>34:B7:DA:54:D5:8C</code></td>
+          <td>ESPHome 2025.11.0<br>YamBMS 1.5.8 + drift fix + mid anchor</td>
+          <td><span class="dot dot-green"></span><span class="badge badge-green">LIVE</span></td>
+        </tr>
+        <tr>
+          <td>Spare chip</td>
+          <td>—</td>
+          <td><code>34:B7:DA:54:FD:18</code></td>
+          <td>YamBMS 1.6.0 (stored, COM6)</td>
+          <td><span class="dot dot-orange"></span><span class="badge badge-orange">STORED</span></td>
+        </tr>
+        <tr>
+          <td>Home Assistant</td>
+          <td><code>192.168.1.13:8123</code></td>
+          <td>—</td>
+          <td>v2025.9.3 (Docker on Pi)</td>
+          <td><span class="dot dot-orange"></span><span class="badge badge-orange">UPDATE PENDING</span></td>
+        </tr>
+        <tr>
+          <td>Solis 3kW Inverter</td>
+          <td>CAN bus</td>
+          <td>—</td>
+          <td>—</td>
+          <td><span class="dot dot-green"></span><span class="badge badge-green">LIVE</span></td>
+        </tr>
+      </table>
+      <div class="alert alert-warning">
+        <span class="alert-icon">⚠️</span>
+        <div><strong>COM7</strong> = old no-display chip (F4:12:FA:6C:42:C4). The Oct 2025 OTA bin for String-1 crashes it — USB factory flash only. Do not flash the Oct 2025 .bin OTA to String-1.</div>
+      </div>
+    </div>
+
+    <!-- 3. Coulomb Drift Fix -->
+    <div class="section" id="drift">
+      <div class="section-title">3. Coulomb Drift Fix</div>
+
+      <div class="alert alert-info">
+        <span class="alert-icon">ℹ️</span>
+        <div>Both strings are running the drift fix. String-1 has top + bottom anchors. String-2 has top + bottom + experimental mid anchor. The fix is inlined directly in each YAML — not as an external package.</div>
+      </div>
+
+      <h3>Problem</h3>
+      <div class="card">
+        <p style="font-size:.88rem;">JK-BMS relies solely on coulomb counting and only recalibrates SoC from voltage when the <code>total_battery_capacity</code> setting is changed. After many cycles the counter drifts — you get readings like 85% when the battery is genuinely full. JK have been asked to fix this for years and refused, instead suggesting purchasing newer hardware.</p>
+      </div>
+
+      <h3>Fix Mechanism</h3>
+      <div class="card">
+        <p style="font-size:.88rem;margin-bottom:10px;">When anchor conditions are met, the ESPHome lambda toggles the BMS capacity number: <strong>95Ah → 94Ah</strong> (triggers JK recalibration from voltage), then <strong>94Ah → 95Ah</strong> (restores correct value) 10 seconds later via a second interval. No <code>delay()</code> used — prevents watchdog panics.</p>
+        <p style="font-size:.88rem;">JK-BMS recalibrates SoC from <strong>voltage</strong> when capacity is toggled — it does NOT reset to 100%. This means anchoring at top and bottom (steep parts of LFP curve) is safe and accurate. Mid-cycle anchoring is unreliable due to the flat LFP curve between 20–80% SoC.</p>
+      </div>
+
+      <h3>Anchor Points</h3>
+      <table class="trigger-table">
+        <tr><th>Anchor</th><th>Trigger Conditions</th><th>Reset Condition</th><th>Strings</th></tr>
+        <tr class="trigger-top">
+          <td>TOP</td>
+          <td>V ≥ 56.4V AND I ≤ 2A AND SoC ≥ 98% held for 30s (6 × 5s checks)</td>
+          <td>V &lt; 55.0V</td>
+          <td>String-1 + String-2</td>
+        </tr>
+        <tr class="trigger-bot">
+          <td>BOTTOM</td>
+          <td>V ≤ 48.0V AND I ≥ -2A AND SoC ≤ 5%</td>
+          <td>V &gt; 50.0V</td>
+          <td>String-1 + String-2</td>
+        </tr>
+        <tr class="trigger-mid">
+          <td>MID (experimental)</td>
+          <td>Avg cell V 3.68–3.72V AND |I| ≤ 1A (resting) — fires once per rest event</td>
+          <td>Avg cell V &lt; 3.60V or &gt; 3.80V</td>
+          <td>String-2 only</td>
+        </tr>
+      </table>
+
+      <h3>Globals Structure</h3>
+      <pre><code><span class="comment"># Per BMS (bms1_ and bms2_ in each YAML)</span>
+globals:
+  - id: bms1_soc_anchor_counter   <span class="comment"># counts 5s intervals at top</span>
+    type: int
+  - id: bms1_soc_anchored         <span class="comment"># top anchor fired flag</span>
+    type: bool
+  - id: bms1_restore_pending      <span class="comment"># triggers 10s restore interval</span>
+    type: bool
+  - id: bms1_mid_anchored         <span class="comment"># mid anchor fired flag (String-2 only)</span>
+    type: bool</code></pre>
+
+      <h3>Log Output</h3>
+      <pre><code><span class="comment"># Top anchor fires:</span>
+[I][soc_fix]: BMS1: anchor triggered V=56.42 I=1.20 SoC=99%
+[I][soc_fix]: BMS1: capacity restored to 95Ah
+
+<span class="comment"># Bottom anchor fires:</span>
+[I][soc_fix]: BMS1: BOTTOM anchor triggered V=47.80 I=-1.50 SoC=4%
+
+<span class="comment"># Mid anchor fires (String-2):</span>
+[I][soc_fix]: BMS1: MID anchor triggered avg=3.702V I=0.30A
+
+<span class="comment"># Top anchor resets (new cycle):</span>
+[I][soc_fix]: BMS1: anchor reset V=54.20</code></pre>
+
+      <div class="alert alert-warning">
+        <span class="alert-icon">⚠️</span>
+        <div>The drift fix uses <code>bms${bms_id}_total_capacity_number</code> — this ID must be injected into the cached <code>bms_sensors_JK_BLE_standard.yaml</code> by <code>patch_and_compile.ps1</code> before every compile. Without this patch the compile fails.</div>
+      </div>
+    </div>
+
+    <!-- 4. JK Native SOC Settings -->
+    <div class="section" id="jk-native">
+      <div class="section-title">4. JK Native SOC Settings</div>
+
+      <div class="card">
+        <h3>SOC-100% Volt and SOC-0% Volt</h3>
+        <p style="font-size:.88rem;margin-bottom:10px;">Newer JK-BMS firmware has native SOC anchor parameters. If the native feature works correctly, ESPHome anchors may not be needed on those units.</p>
+        <table>
+          <tr><th>Parameter</th><th>String-1 value</th><th>String-2 value</th><th>Notes</th></tr>
+          <tr><td>SOC-100% Volt (V)</td><td>4.065</td><td>4.065</td><td>Per cell — corrected Jun 28 2026 (was 4.180 on String-2)</td></tr>
+          <tr><td>SOC-0% Volt (V)</td><td>3.330</td><td>3.330</td><td>Sits between Cell UVP and Cell UVPR — leave as-is</td></tr>
+          <tr><td>Cell UVP (V)</td><td>3.100</td><td>3.100</td><td>Must be below SOC-0% or BMS rejects save</td></tr>
+          <tr><td>Cell UVPR (V)</td><td>3.300</td><td>3.300</td><td>Must be at or below SOC-0%</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>Charging Float Mode (JK-PB firmware only)</h3>
+        <p style="font-size:.88rem;margin-bottom:10px;">String-2 BMS units are JK-PB version with newer firmware. They have a <strong>Charging Float Mode</strong> switch in the Control tab.</p>
+        <table>
+          <tr><th>String</th><th>BMS type</th><th>Charging Float Mode</th><th>Status</th></tr>
+          <tr><td>String-1</td><td>Older JK (non-PB)</td><td>Not available</td><td>ESPHome fix only</td></tr>
+          <tr><td>String-2</td><td>JK-PB</td><td>Enabled Jun 28 2026</td><td>Monitoring — if native reset fires, disable ESPHome anchors on String-2</td></tr>
+        </table>
+        <div class="alert alert-info" style="margin-top:12px;">
+          <span class="alert-icon">ℹ️</span>
+          <div><strong>Test plan:</strong> Watch String-2 for native SoC reset to 100% at end of next full charge cycle. If it fires before ESPHome top anchor: disable String-2 ESPHome anchors and monitor for drift. If no native reset observed: re-enable and keep ESPHome fix as primary.</div>
+        </div>
+      </div>
+    </div>
+
+ <!-- 4. RGB and display Settings -->
+<div class="card">
+  <h3>Board Selection</h3>
+  <p style="font-size:.88rem;margin-bottom:10px;">The board package controls whether the chip uses the RGB LED or the display. Only ONE board line should be uncommented at a time in the YAML packages section.</p>
+  <table>
+    <tr><th>Chip</th><th>Board Package</th><th>Features</th><th>Status</th></tr>
+    <tr><td>AtomS3-Lite</td><td><code>board_ESP32-S3_AtomS3-Lite.yaml</code></td><td>RGB LED, no display</td><td><span class="badge badge-green">PRODUCTION — both strings</span></td></tr>
+    <tr><td>AtomS3</td><td><code>board_ESP32-S3_AtomS3.yaml</code></td><td>Display, no RGB</td><td><span class="badge badge-red">SPARE CHIP — v1.6.0 only, charge/discharge issue unresolved</span></td></tr>
+    <tr><td>AtomS3R</td><td><code>board_ESP32-S3_AtomS3R.yaml</code></td><td>Display + PSRAM</td><td><span class="badge badge-orange">SPARE CHIP alternative variant</span></td></tr>
+  </table>
+  <pre><code><span class="comment"># AtomS3-Lite — RGB LED, no display — PRODUCTION (both strings)</span>
+- path: 'packages/board/board_ESP32-S3_AtomS3-Lite.yaml'
+
+<span class="comment"># AtomS3 — display, no RGB — spare chip only (v1.6.0, charge/discharge unresolved)</span>
+#- path: 'packages/board/board_ESP32-S3_AtomS3.yaml'
+
+<span class="comment"># AtomS3R — display + PSRAM variant (alternative to AtomS3)</span>
+#- path: 'packages/board/board_ESP32-S3_AtomS3R.yaml'
+
+<span class="comment"># CAN bus interface — required for both strings, leave uncommented</span>
+- path: 'packages/board/board_options_itf_canbus_esp32_can.yaml'</code></pre>
+
+  <h3>Compiling Any String</h3>
+  <p style="font-size:.88rem;margin-bottom:10px;"><code>compile.bat</code> works for any YAML. Before compiling ensure the correct board package, static IP, hostname and BMS MACs are set in the YAML.</p>
+  <pre><code><span class="comment"># Compile String-1</span>
+compile.bat YamBMS_STRING1_ORIGINAL.yaml
+
+<span class="comment"># Compile String-2</span>
+compile.bat YamBMS_STRING2_ORIGINAL.yaml
+
+<span class="comment"># Compile any new string — update board, IP, hostname, BMS MACs first</span>
+compile.bat YamBMS_STRINGx_ORIGINAL.yaml</code></pre>
+</div>
+
+    <!-- 5. How to Flash -->
+    <div class="section" id="flash">
+      <div class="section-title">5. How to Flash a Device</div>
+
+      <div class="alert alert-danger">
+        <span class="alert-icon">🚨</span>
+        <div><strong>FIRST RULE every session:</strong> Pull firmware from both chips BEFORE doing anything else. Verify chip MAC and IP before flashing. Never flash blindly.</div>
+      </div>
+
+      <h3>OTA Flash (standard — chip on network)</h3>
+      <pre><code><span class="comment"># String-1</span>
+esphome upload YamBMS_STRING1_ORIGINAL.yaml --file "0_BACKUP\firmware\yambms-1-Jun2026-v1.5.8-KITCHEN-WORKING.bin" --device 192.168.0.101
+
+<span class="comment"># String-2</span>
+esphome upload YamBMS_STRING2_ORIGINAL.yaml --file "0_BACKUP\firmware\yambms-2-Jun2026-v1.5.8-SHED-WORKING.bin" --device 192.168.0.21</code></pre>
+
+      <h3>USB Factory Flash (recovery — chip on desk via COM7)</h3>
+      <pre><code>python -m esptool --port COM7 write-flash 0x0 0_BACKUP\firmware\yambms-1-Jun2026-v1.5.8-KITCHEN-WORKING.factory.bin</code></pre>
+
+      <div class="alert alert-danger">
+        <span class="alert-icon">🚨</span>
+        <div>The Oct 2025 OTA bin (<code>yambms-1-Oct2025-v1.5.8-PI-LIVE.bin</code>) <strong>crashes String-1 when flashed OTA</strong>. Use factory flash only for that file. The Oct 2025 String-2 equivalent is fine.</div>
+      </div>
+
+      <h3>After Compile — Back Up Before Flashing</h3>
+      <pre><code><span class="comment"># Always back up the new bin before flashing</span>
+Copy-Item ".esphome\build\yambms-1\.pioenvs\yambms-1\firmware.ota.bin" "0_BACKUP\firmware\yambms-1-DATESTAMP-DESCRIPTION.bin"
+Copy-Item ".esphome\build\yambms-1\.pioenvs\yambms-1\firmware.factory.bin" "0_BACKUP\firmware\yambms-1-DATESTAMP-DESCRIPTION.factory.bin"</code></pre>
+
+      <h3>Check Logs After Flash</h3>
+      <pre><code>esphome logs YamBMS_STRING1_ORIGINAL.yaml --device 192.168.0.101
+esphome logs YamBMS_STRING2_ORIGINAL.yaml --device 192.168.0.21</code></pre>
+    </div>
+
+    <!-- 6. Compile Pipeline -->
+    <div class="section" id="pipeline">
+      <div class="section-title">6. Compile Pipeline</div>
+
+      <div class="alert alert-warning">
+        <span class="alert-icon">⚠️</span>
+        <div>Never run <code>esphome compile</code> directly. Always use <code>compile.bat</code> which runs <code>patch_and_compile.ps1</code>. Without the patches the compile either fails or produces a binary from wrong package versions.</div>
+      </div>
+
+      <h3>Working Directory</h3>
+      <pre><code>C:\Users\osagk\Documents\0_My_Projects\Solar_Project\AI_Assist_Project\</code></pre>
+
+      <h3>Compile Command</h3>
+      <pre><code><span class="comment"># String-1</span>
+compile.bat YamBMS_STRING1_ORIGINAL.yaml
+
+<span class="comment"># String-2</span>
+compile.bat YamBMS_STRING2_ORIGINAL.yaml</code></pre>
+
+      <h3>What patch_and_compile.ps1 Does</h3>
+      <ol class="steps">
+        <li>Pins all remote package refs to <code>ref: 1.5.8</code> (prevents drift to main/v1.6.0)</li>
+        <li>Sets <code>refresh: 365d</code> on all packages (prevents ESPHome re-downloading cached packages on every compile)</li>
+        <li>Patches all cached <code>bms_sensors_JK_BLE_standard.yaml</code> files: pins <code>esphome-jk-bms@2.5.0</code> (fixes errors_bitmask removal) and injects <code>id: bms${bms_id}_total_capacity_number</code></li>
+        <li>Runs <code>git add . && git commit</code> to fix CMake head-ref error during PlatformIO build</li>
+        <li>Creates <code>head-ref</code> files for all build directories</li>
+        <li>Runs <code>esphome compile</code></li>
+      </ol>
+
+      <div class="alert alert-danger">
+        <span class="alert-icon">🚨</span>
+        <div>A Gemini-generated script once ran <code>esphome config</code> first, which re-downloaded packages before patching — overwriting pinned versions and producing a non-functional binary. Never run <code>esphome config</code> before patching.</div>
+      </div>
+
+      <h3>Key Pinned Versions</h3>
+      <table>
+        <tr><th>Package</th><th>Pinned to</th><th>Reason</th></tr>
+        <tr><td>esphome-yambms</td><td><code>ref: 1.5.8</code></td><td>v1.6.0 has unresolved charge/discharge issue</td></tr>
+        <tr><td>esphome-jk-bms (syssi)</td><td><code>@2.5.0</code></td><td>v3.0.0 removed errors_bitmask sensor — breaks compile</td></tr>
+        <tr><td>refresh</td><td><code>365d</code></td><td>Prevents ESPHome re-downloading on every compile</td></tr>
+      </table>
+
+      <h3>Why Local Drift Fix Cannot Be a Remote Package</h3>
+      <div class="card">
+        <p style="font-size:.88rem;">ESPHome fetches remote packages from GitHub. Local files cannot be included via the <code>files:</code> syntax in a remote package block — it will error with "does not exist in repository". The drift fix is therefore <strong>inlined directly</strong> as <code>globals:</code> and <code>interval:</code> blocks in each YAML.</p>
+      </div>
+    </div>
+
+    <!-- 7. Home Assistant -->
+    <div class="section" id="ha">
+      <div class="section-title">7. Home Assistant Notes</div>
+
+      <div class="card">
+        <h3>Server Details</h3>
+        <table>
+          <tr><th>Instance</th><th>IP</th><th>Notes</th></tr>
+          <tr><td>Production HA</td><td><code>192.168.1.13:8123</code></td><td>v2025.9.3 — update pending</td></tr>
+          <tr><td>Test HA (Pi)</td><td><code>192.168.0.46:8123</code></td><td>For testing dashboard changes</td></tr>
+        </table>
+      </div>
+
+      <h3>API Access</h3>
+      <pre><code><span class="comment"># Production HA (from Pi terminal)</span>
+curl -s -H "Authorization: Bearer $TOKEN" "http://192.168.1.13:8123/api/states"
+
+<span class="comment"># Test HA</span>
+curl -s -H "Authorization: Bearer $TOKEN2" "http://192.168.0.46:8123/api/states"
+
+<span class="comment"># TOKEN is set in ~/.bashrc on the Pi</span></code></pre>
+
+      
+
+
+<div class="card">
+  <h3>Dashboard Fix Scripts</h3>
+  <p style="font-size:.88rem;margin-bottom:10px;">These scripts bulk-replace entity IDs in the HA lovelace file when ESPHome entity names change — e.g. after flashing new firmware or upgrading YamBMS version. Run on the Pi via SSH.</p>
+
+  <table>
+    <tr><th>Script</th><th>Target</th><th>Lovelace file</th><th>Entity prefix</th></tr>
+    <tr><td><code>fix_ha_dashboard_13.py</code></td><td>Production HA .13</td><td><code>lovelace.lovelace</code></td><td><code>kitchen_</code></td></tr>
+    <tr><td><code>fix_ha_dashboard_46.py</code></td><td>Test HA .46</td><td><code>lovelace</code></td><td>(none)</td></tr>
+  </table>
+
+  <h3>Usage</h3>
+  <pre><code><span class="comment"># Preview changes only — no files written</span>
+sudo python3 Recreate-HA-Dashboard/fix_ha_dashboard_13.py --dry-run
+
+<span class="comment"># Apply changes and restart HA automatically</span>
+sudo python3 Recreate-HA-Dashboard/fix_ha_dashboard_13.py
+
+<span class="comment"># Same for test HA</span>
+sudo python3 Recreate-HA-Dashboard/fix_ha_dashboard_46.py --dry-run
+sudo python3 Recreate-HA-Dashboard/fix_ha_dashboard_46.py</code></pre>
+
+  <h3>What the Scripts Do</h3>
+  <ol class="steps">
+    <li>Creates a timestamped backup of the lovelace file before making any changes</li>
+    <li>Runs through a list of entity ID replacements (old prefix → new prefix)</li>
+    <li>Writes the updated lovelace file</li>
+    <li>Restarts HA automatically via <code>ha core restart</code></li>
+    <li>Wait 2–3 minutes then refresh the dashboard</li>
+  </ol>
+
+  <h3>Entity ID Replacements (production .13)</h3>
+  <table>
+    <tr><th>Old entity prefix</th><th>New entity prefix</th></tr>
+    <tr><td><code>sensor.jk_bms_1_</code></td><td><code>sensor.kitchen_yambms_1_string_1_jk_bms_1_</code></td></tr>
+    <tr><td><code>sensor.jk_bms_2_</code></td><td><code>sensor.kitchen_yambms_1_string_1_jk_bms_2_</code></td></tr>
+    <tr><td><code>binary_sensor.jk_bms_1_</code></td><td><code>binary_sensor.kitchen_yambms_1_string_1_jk_bms_1_</code></td></tr>
+    <tr><td><code>binary_sensor.jk_bms_2_</code></td><td><code>binary_sensor.kitchen_yambms_1_string_1_jk_bms_2_</code></td></tr>
+    <tr><td><code>binary_sensor.yambms_1_board_online_status</code></td><td><code>binary_sensor.kitchen_yambms_1_string_1_esp32_online_status</code></td></tr>
+    <tr><td><code>sensor.yambms_1_string_1_</code></td><td><code>sensor.kitchen_yambms_1_string_1_</code></td></tr>
+    <tr><td><code>switch.yambms_1_string_1_</code></td><td><code>switch.kitchen_yambms_1_string_1_</code></td></tr>
+    <tr><td><code>number.yambms_1_string_1_</code></td><td><code>number.kitchen_yambms_1_string_1_</code></td></tr>
+    <tr><td><code>sensor.yambms_2_string_2_</code></td><td><code>sensor.kitchen_yambms_2_string_2_</code></td></tr>
+    <tr><td><code>switch.yambms_2_string_2_</code></td><td><code>switch.kitchen_yambms_2_string_2_</code></td></tr>
+    <tr><td><code>number.yambms_2_string_2_</code></td><td><code>number.kitchen_yambms_2_string_2_</code></td></tr>
+  </table>
+
+  <div class="alert alert-warning">
+    <span class="alert-icon">⚠️</span>
+    <div>Always run with <code>--dry-run</code> first to preview changes before applying. The script creates a timestamped backup automatically but double-check the replacement count looks sensible before committing.</div>
+  </div>
+
+  <div class="alert alert-info">
+    <span class="alert-icon">ℹ️</span>
+    <div>Lovelace file location on Pi: <code>/usr/share/hassio/homeassistant/.storage/lovelace.lovelace</code></div>
+  </div>
+</div>
+
+
+      <h3>NVS Switch State Warning</h3>
+      <div class="alert alert-warning">
+        <span class="alert-icon">⚠️</span>
+        <div>v1.6.0 switches default to <code>RESTORE_DEFAULT_OFF</code> and NVS stores switch states across OTA flashes. Even after reflashing, switches persist OFF. This is part of the v1.6.0 charge/discharge issue — see section 9.</div>
+      </div>
+    </div>
+
+
+  <!-- 7a. Home Assistant Integration -->
+  <div class="card">
+  <h3>Inverter & Energy Integrations</h3>
+  <table>
+    <tr><th>Integration</th><th>Domain</th><th>Host/Details</th><th>Notes</th></tr>
+    <tr>
+      <td>Solarman</td>
+      <td><code>solarman</code></td>
+      <td><code>192.168.0.96:8899</code><br>Serial: <code>2309507303</code><br>Lookup: <code>sofar_lsw3.yaml</code></td>
+      <td>Sofar inverter (String-2/Shed). Some sensor values misread due to scaling issue in integration (e.g. Battery Voltage shows 5.56V instead of 55.6V)</td>
+    </tr>
+    <tr>
+      <td>SolaX Modbus — sofar-solax</td>
+      <td><code>solax_modbus</code></td>
+      <td><code>192.168.0.96</code><br>Plugin: <code>sofar_old</code><br>Baud: 19200</td>
+      <td>Secondary Sofar integration via serial. Fails to read serial number on boot — non-critical, logs /dev/ttyUSB0 errors</td>
+    </tr>
+    <tr>
+      <td>SolaX Modbus — SolaX</td>
+      <td><code>solax_modbus</code></td>
+      <td><code>192.168.0.96:502</code><br>Plugin: <code>sofar_old</code><br>TCP</td>
+      <td>Third Sofar/Solis integration attempt. Also logs /dev/ttyUSB0 errors on boot</td>
+    </tr>
+    <tr>
+      <td>Solis Cloud</td>
+      <td><code>solis</code></td>
+      <td>Portal: <code>soliscloud.com:13333</code><br>Plant: <code>Station 1C7F2E</code></td>
+      <td>Solis inverter (String-1/Kitchen) via cloud API</td>
+    </tr>
+    <tr>
+      <td>Octopus Energy</td>
+      <td><code>octopus_energy</code></td>
+      <td>Account: <code>A-2469801E</code><br>v18.3.1</td>
+      <td>Agile tariff rates. Broke on upgrade from v16 → v18 — fixed by deleting and re-adding entry with same API key</td>
+    </tr>
+  </table>
+
+  <div class="alert alert-warning">
+    <span class="alert-icon">⚠️</span>
+    <div>The <code>/dev/ttyUSB0</code> errors on boot from solax_modbus are harmless — no USB serial device is connected. These integrations connect via TCP/IP instead.</div>
+  </div>
+
+  <div class="alert alert-info">
+    <span class="alert-icon">ℹ️</span>
+    <div><strong>Octopus Energy re-add procedure (if breaks after update):</strong> Delete the <code>A-2469801E</code> entry → Add entry → Account ID: <code>A-2469801E</code> → API Key from <code>/usr/share/hassio/homeassistant/.storage/core.config_entries</code> on .46 → Calorific value: <code>40.0</code> → Restart HA.</div>
+  </div>
+</div>
+  
+    <!-- 8. Backups -->
+    <div class="section" id="backups">
+      <div class="section-title">8. Backups</div>
+      <table>
+        <tr><th>File</th><th>Type</th><th>Notes</th></tr>
+        <tr><td><code>yambms-1-Jun2026-v1.5.8-KITCHEN-WORKING.bin</code></td><td><span class="badge badge-green">OTA</span></td><td>String-1 working firmware — top + bottom anchor ✅</td></tr>
+        <tr><td><code>yambms-1-Jun2026-v1.5.8-KITCHEN-WORKING.factory.bin</code></td><td><span class="badge badge-cyan">FACTORY</span></td><td>String-1 USB factory flash</td></tr>
+        <tr><td><code>yambms-2-Jun2026-v1.5.8-SHED-WORKING.bin</code></td><td><span class="badge badge-green">OTA</span></td><td>String-2 working firmware — top + bottom anchor ✅</td></tr>
+        <tr><td><code>yambms-2-Jun2026-v1.5.8-SHED-WORKING.factory.bin</code></td><td><span class="badge badge-cyan">FACTORY</span></td><td>String-2 USB factory flash</td></tr>
+        <tr><td><code>yambms-2-Jun2026-v1.5.8-SHED-MID-ANCHOR.bin</code></td><td><span class="badge badge-green">OTA</span></td><td>String-2 with mid anchor added ✅ (current live)</td></tr>
+        <tr><td><code>yambms-2-Jun2026-v1.5.8-SHED-MID-ANCHOR.factory.bin</code></td><td><span class="badge badge-cyan">FACTORY</span></td><td>String-2 mid anchor factory flash</td></tr>
+        <tr><td><code>yambms-1-Oct2025-v1.5.8-PI-LIVE.factory.bin</code></td><td><span class="badge badge-orange">USB ONLY</span></td><td>OTA bin crashes String-1 — factory flash only</td></tr>
+        <tr><td><code>yambms-2-Oct2025-v1.5.8-PI-LIVE.factory.bin</code></td><td><span class="badge badge-orange">USB ONLY</span></td><td>Older backup, String-2</td></tr>
+      </table>
+      <div class="alert alert-info">
+        <span class="alert-icon">ℹ️</span>
+        <div>All backups stored in <code>0_BACKUP\firmware\</code> within the working directory.</div>
+      </div>
+    </div>
+
+ <!-- 8a. Git Version Control -->
+<div class="section" id="git">
+  <div class="section-title">8a. Git Version Control</div>
+  <div class="card">
+    <h3>Repository</h3>
+    <p style="font-size:.88rem;margin-bottom:10px;">Local git repo with GitHub remote for offsite backup. Firmware .bin files excluded from future commits via .gitignore — YAMLs, scripts and documentation are tracked.</p>
+    <pre><code><span class="comment"># Working directory</span>
+C:\Users\osagk\Documents\0_My_Projects\Solar_Project\AI_Assist_Project\
+
+<span class="comment"># GitHub remote</span>
+https://github.com/chaosnature/Solar-Project.git
+
+<span class="comment"># Check status</span>
+git status
+
+<span class="comment"># Stage and commit</span>
+git add .
+git commit -m "Description of changes"
+
+<span class="comment"># Push to GitHub</span>
+git push
+
+<span class="comment"># View history</span>
+git log --oneline</code></pre>
+
+    <h3>Key Commits</h3>
+    <table>
+      <tr><th>Hash</th><th>Description</th></tr>
+      <tr><td><code>e0004a8</code></td><td>Add gitignore to exclude firmware bins from future commits</td></tr>
+      <tr><td><code>d70ef41</code></td><td>String-2 top anchor 55.4V SoC60, updated documentation with HA integrations</td></tr>
+      <tr><td><code>bd98e7b</code></td><td>String-2 top anchor adjusted to 55.4V for Sofar inverter</td></tr>
+      <tr><td><code>9a4ac5a</code></td><td>Add mid anchor to both strings, update documentation</td></tr>
+      <tr><td><code>616d4ff</code></td><td>Add bottom anchor drift fix to both strings</td></tr>
+      <tr><td><code>23ee9aa</code></td><td>Initial commit</td></tr>
+    </table>
+
+    <div class="alert alert-warning">
+      <span class="alert-icon">⚠️</span>
+      <div>The <code>pre-compile patch</code> commits are auto-generated by <code>patch_and_compile.ps1</code> before each compile — this is expected and captures the YAML state at each compile point.</div>
+    </div>
+
+    <div class="alert alert-info">
+      <span class="alert-icon">ℹ️</span>
+      <div>Firmware .bin files are stored locally in <code>0_BACKUP/firmware/</code> but excluded from GitHub via <code>.gitignore</code>. Keep local copies safe — they are not offsite backed up.</div>
+    </div>
+  </div>
+</div>
+
+
+ <!-- 8a. HA Manual Backup via Command Line -->
+  <div class="section-title">8b. HA Manual Backup via Command Line</div>
+<div class="card">
+
+  <h3>Manual Backup via Command Line</h3>
+  <p style="font-size:.88rem;margin-bottom:10px;">The HA UI backup may fail after major version updates or when the database is locked. Use the supervisor CLI instead.</p>
+
+  <h3>Prerequisites — Check HA is Fully Up</h3>
+  <pre><code><span class="comment"># Confirm both containers are running before attempting backup</span>
+sudo docker ps | grep -E "raspberrypi4.*homeassistant|hassio_supervisor"
+
+<span class="comment"># Expected output:</span>
+<span class="comment"># raspberrypi4-64-homeassistant:2026.x.x   Up X minutes   homeassistant</span>
+<span class="comment"># aarch64-hassio-supervisor:latest          Up X minutes   hassio_supervisor</span></code></pre>
+
+  <h3>Trigger Backup</h3>
+  <pre><code><span class="comment"># Create a full backup via supervisor CLI</span>
+sudo ha backups new --name "Manual_backup_2026-06-28"
+
+<span class="comment"># Success response looks like:</span>
+<span class="comment"># Processing... Done.</span>
+<span class="comment"># job_id: 8b563db56481416496967b12f3592593</span>
+<span class="comment"># slug: f50fba6d</span></code></pre>
+
+  <h3>Verify Backup Created</h3>
+  <pre><code><span class="comment"># Check backup file appeared</span>
+ls -lh /usr/share/hassio/backup/
+
+<span class="comment"># Watch it grow in real time</span>
+watch -n 10 'ls -lh /usr/share/hassio/backup/'</code></pre>
+
+  <div class="alert alert-warning">
+    <span class="alert-icon">⚠️</span>
+    <div><strong>If backup fails with "Could not lock database":</strong> the recorder repack is still running and has the db locked. Wait 10–15 minutes and retry. If still stuck after hours, reboot the Pi with <code>sudo reboot</code>, wait 4 minutes for HA to fully start, then retry the backup command.</div>
+  </div>
+
+  <div class="alert alert-danger">
+    <span class="alert-icon">🚨</span>
+    <div><strong>Do NOT use these API endpoints</strong> — they fail on HA 2026.x:<br>
+    <code>POST /api/services/backup/create</code> → 400 Bad Request<br>
+    <code>POST /api/services/hassio/backup_full</code> → 500 Internal Server Error<br>
+    <code>POST /api/backup/generate</code> → 404 Not Found<br>
+    Use <code>sudo ha backups new</code> instead.</div>
+  </div>
+
+  <h3>DB Size Management</h3>
+  <pre><code><span class="comment"># Check database and disk usage</span>
+du -sh /usr/share/hassio/homeassistant/home-assistant_v2.db
+du -sh /usr/share/hassio/backup/
+df -h
+
+<span class="comment"># Purge old history via HA Developer Tools</span>
+<span class="comment"># http://192.168.1.13:8123/developer-tools/action</span>
+<span class="comment"># Action: recorder.purge</span>
+<span class="comment"># YAML: keep_days: 30 / repack: true</span>
+<span class="comment"># Note: repack locks db for extended period on large databases</span></code></pre>
+
+  <h3>Clean Up Old Backups</h3>
+  <pre><code><span class="comment"># List backups with sizes</span>
+du -sh /usr/share/hassio/backup/*
+
+<span class="comment"># Remove old backup (use sudo)</span>
+sudo rm -f /usr/share/hassio/backup/FILENAME.tar</code></pre>
+</div>
+
+
+
+    <!-- 9. v1.6.0 Known Issue -->
+    <div class="section" id="v160">
+      <div class="section-title">9. v1.6.0 Known Issue — UNRESOLVED</div>
+
+      <div class="alert alert-danger">
+        <span class="alert-icon">🚨</span>
+        <div><strong>Do NOT suggest upgrading to v1.6.0 as a fix for anything.</strong> Root cause not yet identified. Stay on v1.5.8.</div>
+      </div>
+
+      <div class="card">
+        <h3>Symptoms</h3>
+        <ul style="font-size:.88rem;padding-left:18px;margin-top:6px;">
+          <li>Charge Status: Cut-Off immediately on boot</li>
+          <li>CCL Derating Reason: Charge Disabled</li>
+          <li>DCL Derating Reason: Discharge Disabled</li>
+          <li>Requested Charge Current: 0A</li>
+          <li>Requested Discharge Current: 0A</li>
+          <li>Battery neither charges nor discharges</li>
+        </ul>
+        <h3>What Was Tried</h3>
+        <ul style="font-size:.88rem;padding-left:18px;margin-top:6px;">
+          <li>Added <code>restore_mode: RESTORE_DEFAULT_ON</code> via <code>!extend</code> — did not resolve</li>
+          <li>Manually turning on automatic charge/discharge switches via HA — did not persist</li>
+        </ul>
+        <h3>Suspected (uninvestigated)</h3>
+        <ul style="font-size:.88rem;padding-left:18px;margin-top:6px;">
+          <li>Float/EOC charge state machine in v1.6.0 may be blocking discharge</li>
+          <li>NVS stores switch OFF state across OTA flashes</li>
+        </ul>
+        <h3>Current Decision</h3>
+        <p style="font-size:.88rem;margin-top:6px;">Spare chip (MAC <code>34:B7:DA:54:FD:18</code>) is stored on v1.6.0 for future investigation. Both production strings remain on v1.5.8 indefinitely until root cause is found.</p>
+      </div>
+    </div>
+
+    <!-- 10. Known Issues -->
+    <div class="section" id="known">
+      <div class="section-title">10. Known Issues</div>
+
+      <div class="alert alert-danger">
+        <span class="alert-icon">🔴</span>
+        <div><strong>Undervoltage incident (while on holiday):</strong> String batteries dropped to 2.7V/cell — below Cell UVP (3.1V). YamBMS lost connection with Solis during the event; Solis may have continued discharging without BMS oversight. Root cause under investigation. Cells may have long-term capacity damage.</div>
+      </div>
+      <div class="alert alert-warning">
+        <span class="alert-icon">⚠️</span>
+        <div><strong>BMS4 Cell 13 low voltage:</strong> historically showed ~59mV delta vs other cells. Monitor for recurrence — may indicate a weak cell or poor connection.</div>
+      </div>
+      <div class="alert alert-warning">
+        <span class="alert-icon">⚠️</span>
+        <div><strong>Display FAILED (String-1 chip):</strong> AtomS3 display shows "display is marked FAILED: unspecified" — GPIO33/34 PSRAM conflict. Non-critical, CAN bus and BLE working fine.</div>
+      </div>
+      <div class="alert alert-info">
+        <span class="alert-icon">ℹ️</span>
+        <div><strong>Mid anchor reliability:</strong> The 3.7V mid anchor on String-2 is experimental. LFP voltage curve is flat between 20–80% SoC — a 0.1V measurement error could map to 40–60% SoC. Monitor carefully before applying to String-1.</div>
+      </div>
+    </div>
+
+    <!-- 11. Pending Tasks -->
+    <div class="section" id="pending">
+      <div class="section-title">11. Pending Tasks</div>
+      <table>
+        <tr><th>Task</th><th>Priority</th><th>Notes</th></tr>
+        <tr><td>Monitor String-2 JK native Charging Float Mode</td><td><span class="badge badge-red">HIGH</span></td><td>If native reset fires at next full charge → disable ESPHome anchors on String-2 and monitor</td></tr>
+        <tr><td>Monitor mid anchor trigger on String-2</td><td><span class="badge badge-red">HIGH</span></td><td>Watch logs for MID anchor soc_fix messages as String-2 cycles down through 3.7V</td></tr>
+        <tr><td>Investigate undervoltage incident</td><td><span class="badge badge-red">HIGH</span></td><td>Why did cells drop to 2.7V despite UVP at 3.1V? Was YamBMS offline? Check Solis fallback behaviour</td></tr>
+        <tr><td>Update production HA from v2025.9.3</td><td><span class="badge badge-orange">MEDIUM</span></td><td>Standard HA update — back up first</td></tr>
+        <tr><td>Share community note on YamBMS forum</td><td><span class="badge badge-orange">MEDIUM</span></td><td>File: Recreate-HA-Dashboard/YamBMS_SoC_Drift_Fix_Community_Note.md — already posted, thread active</td></tr>
+        <tr><td>Investigate v1.6.0 charge/discharge issue</td><td><span class="badge badge-orange">MEDIUM</span></td><td>Spare chip available on COM6 for testing</td></tr>
+        <tr><td>Apply mid anchor to String-1</td><td><span class="badge badge-yellow">LOW</span></td><td>Only after String-2 mid anchor validated over several cycles</td></tr>
+        <tr><td>Fix decimal precision on sensors</td><td><span class="badge badge-yellow">LOW</span></td><td>Add <code>accuracy_decimals: 2</code> to power/current/voltage sensors</td></tr>
+      </table>
+
+      <div class="alert alert-success" style="margin-top:20px;">
+	  
+	  <!-- Release Updates --> 
+	  <tr>
+  <td>Evaluate YamBMS v1.7.0 when released</td>
+  <td><span class="badge badge-orange">MEDIUM</span></td>
+  <td>v1.7.0 in dev/main branch — NOT yet tagged as release. Will bring entity naming changes that will break HA dashboard. Do NOT upgrade until: (1) official release tagged on GitHub, (2) entity changes assessed, (3) fix_ha_dashboard scripts updated, (4) tested on String-2 first. Current v1.5.8 is stable — no rush.</td>
+</tr>
+<tr>
+  <td>Investigate v1.6.0 charge/discharge issue before considering v1.7.0</td>
+  <td><span class="badge badge-orange">MEDIUM</span></td>
+  <td>Root cause of v1.6.0 not charging/discharging still unknown. Spare chip (34:B7:DA:54:FD:18, COM6) available for testing. Understand v1.6.0 failure before attempting v1.7.0 upgrade.</td>
+</tr>
+
+
+<div class="alert alert-warning">
+  <span class="alert-icon">⚠️</span>
+  <div><strong>v1.7.0 warning:</strong> Community discussions confirm v1.7.0 will change HA entity naming conventions. Anyone on v1.5.x upgrading directly to v1.7.0 will need to update all dashboard entity IDs. Wait for official GitHub release tag before considering upgrade. Monitor: <code>github.com/Sleeper85/esphome-yambms/releases</code></div>
+</div>
+
+
+
+	  
+	 <!-- Release Updates -->  
+	 
+        <span class="alert-icon">✅</span>
+        <div><strong>Session complete June 28 2026.</strong> Both strings stable on v1.5.8 with drift fix. String-2 mid anchor flashed and live. JK native Charging Float Mode enabled on String-2 JK-PB units. Community thread active with good engagement from Sleeper85 and Haysdb. Monitoring in progress.</div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+
+
+</body>
+</html>
