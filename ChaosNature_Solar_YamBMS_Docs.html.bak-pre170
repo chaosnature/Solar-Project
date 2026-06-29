@@ -721,45 +721,6 @@ sudo rm -f /usr/share/hassio/backup/FILENAME.tar</code></pre>
 
 
 
-
-    <!-- 9a. YamBMS Version Reference -->
-    <div class="section" id="yambms-versions">
-      <div class="section-title">9a. YamBMS Version Reference</div>
-      <div class="card">
-        <h3>Key URLs</h3>
-        <table>
-          <tr><th>Resource</th><th>URL</th></tr>
-          <tr><td>GitHub Releases</td><td><code>https://github.com/Sleeper85/esphome-yambms/releases</code></td></tr>
-          <tr><td>Changelog</td><td><code>https://github.com/Sleeper85/esphome-yambms/blob/main/documents/README/Changelog.md</code></td></tr>
-          <tr><td>Forum Thread</td><td><code>https://diysolarforum.com/threads/yambms-jk-bms-can-with-new-cut-off-charging-logic-open-source.79325/</code></td></tr>
-          <tr><td>Drift Fix Post</td><td><code>https://diysolarforum.com/threads/how-to-flash-atom-s3-with-esphome-ha.83457/page-2</code></td></tr>
-        </table>
-        <h3>Version Status</h3>
-        <table>
-          <tr><th>Version</th><th>Status</th><th>Notes</th></tr>
-          <tr><td>v1.5.8</td><td><span class="badge badge-green">PRODUCTION</span></td><td>Last stable tagged release Jan 14 2026. ESPHome 2025.11.0. Drift fix inlined. Stay here.</td></tr>
-          <tr><td>v1.6.0</td><td><span class="badge badge-red">BROKEN</span></td><td>Was in main branch untagged. Charge/discharge broken. Spare chip only.</td></tr>
-          <tr><td>v1.7.0</td><td><span class="badge badge-orange">TESTING PENDING</span></td><td>Released Jun 29 2026. Sub-device entity renaming (PR 142) breaks dashboard. Test on .46 with spare chip first.</td></tr>
-        </table>
-        <h3>v1.7.0 Test Plan (next session)</h3>
-        <ol class="steps">
-          <li>Pull firmware backups from both production chips first (FIRST RULE)</li>
-          <li>USB factory flash spare chip (MAC <code>34:B7:DA:54:FD:18</code>, COM6, AtomS3 display) — compile with <code>ref: 1.7.0</code> and board <code>board_ESP32-S3_AtomS3.yaml</code></li>
-          <li>Add ESPHome integration on test HA (.46) pointing to test chip IP</li>
-          <li>Backup test HA dashboard: <code>cp /usr/share/hassio/homeassistant/.storage/lovelace /tmp/lovelace_pre_v170_backup</code></li>
-          <li>Grep all new v1.7.0 entity IDs: <code>curl -s -H "Authorization: Bearer $TOKEN2" "http://192.168.0.46:8123/api/states" | python3 -m json.tool | grep entity_id | grep -i yambms</code></li>
-          <li>Compare new entity IDs against v1.5.8 names — document all changes</li>
-          <li>Build <code>fix_ha_dashboard_17.py</code> — new migration script for v1.7.0 entity names</li>
-          <li>Test full dashboard on .46 — verify all entities resolve</li>
-          <li>Investigate charge/discharge behaviour — does v1.6.0 cut-off issue still exist in v1.7.0?</li>
-          <li><strong>Never touch .13 production until fully validated on .46</strong></li>
-        </ol>
-        <div class="alert alert-danger">
-          <span class="alert-icon">??</span>
-          <div><strong>Do NOT upgrade production strings to v1.7.0</strong> until fully tested on .46. Sub-device entity renaming (PR 142) will break all dashboard cards on .13.</div>
-        </div>
-      </div>
-    </div>
     <!-- 9. v1.6.0 Known Issue -->
     <div class="section" id="v160">
       <div class="section-title">9. v1.6.0 Known Issue â€” UNRESOLVED</div>
@@ -868,4 +829,3 @@ sudo rm -f /usr/share/hassio/backup/FILENAME.tar</code></pre>
 
 </body>
 </html>
-
