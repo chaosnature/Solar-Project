@@ -468,21 +468,66 @@ curl -s -H "Authorization: Bearer $TOKEN2" "http://192.168.0.46:8123/api/states"
 
 <span class="comment"># TOKEN is set in ~/.bashrc on the Pi</span></code></pre>
 
-      <h3>Dashboard Scripts</h3>
-      <pre><code><span class="comment"># Production HA (.13) — run on Pi</span>
+      
+
+
+<div class="card">
+  <h3>Dashboard Fix Scripts</h3>
+  <p style="font-size:.88rem;margin-bottom:10px;">These scripts bulk-replace entity IDs in the HA lovelace file when ESPHome entity names change — e.g. after flashing new firmware or upgrading YamBMS version. Run on the Pi via SSH.</p>
+
+  <table>
+    <tr><th>Script</th><th>Target</th><th>Lovelace file</th><th>Entity prefix</th></tr>
+    <tr><td><code>fix_ha_dashboard_13.py</code></td><td>Production HA .13</td><td><code>lovelace.lovelace</code></td><td><code>kitchen_</code></td></tr>
+    <tr><td><code>fix_ha_dashboard_46.py</code></td><td>Test HA .46</td><td><code>lovelace</code></td><td>(none)</td></tr>
+  </table>
+
+  <h3>Usage</h3>
+  <pre><code><span class="comment"># Preview changes only — no files written</span>
+sudo python3 Recreate-HA-Dashboard/fix_ha_dashboard_13.py --dry-run
+
+<span class="comment"># Apply changes and restart HA automatically</span>
 sudo python3 Recreate-HA-Dashboard/fix_ha_dashboard_13.py
 
-<span class="comment"># Test HA (.46) — run on Pi</span>
+<span class="comment"># Same for test HA</span>
+sudo python3 Recreate-HA-Dashboard/fix_ha_dashboard_46.py --dry-run
 sudo python3 Recreate-HA-Dashboard/fix_ha_dashboard_46.py</code></pre>
 
-      <div class="card">
-        <h3>Dashboard Script Details</h3>
-        <table>
-          <tr><th>Script</th><th>Target</th><th>Lovelace file</th><th>Entity prefix</th></tr>
-          <tr><td>fix_ha_dashboard_13.py</td><td>Production .13</td><td>lovelace.lovelace</td><td>kitchen_</td></tr>
-          <tr><td>fix_ha_dashboard_46.py</td><td>Test .46</td><td>lovelace</td><td>(none)</td></tr>
-        </table>
-      </div>
+  <h3>What the Scripts Do</h3>
+  <ol class="steps">
+    <li>Creates a timestamped backup of the lovelace file before making any changes</li>
+    <li>Runs through a list of entity ID replacements (old prefix → new prefix)</li>
+    <li>Writes the updated lovelace file</li>
+    <li>Restarts HA automatically via <code>ha core restart</code></li>
+    <li>Wait 2–3 minutes then refresh the dashboard</li>
+  </ol>
+
+  <h3>Entity ID Replacements (production .13)</h3>
+  <table>
+    <tr><th>Old entity prefix</th><th>New entity prefix</th></tr>
+    <tr><td><code>sensor.jk_bms_1_</code></td><td><code>sensor.kitchen_yambms_1_string_1_jk_bms_1_</code></td></tr>
+    <tr><td><code>sensor.jk_bms_2_</code></td><td><code>sensor.kitchen_yambms_1_string_1_jk_bms_2_</code></td></tr>
+    <tr><td><code>binary_sensor.jk_bms_1_</code></td><td><code>binary_sensor.kitchen_yambms_1_string_1_jk_bms_1_</code></td></tr>
+    <tr><td><code>binary_sensor.jk_bms_2_</code></td><td><code>binary_sensor.kitchen_yambms_1_string_1_jk_bms_2_</code></td></tr>
+    <tr><td><code>binary_sensor.yambms_1_board_online_status</code></td><td><code>binary_sensor.kitchen_yambms_1_string_1_esp32_online_status</code></td></tr>
+    <tr><td><code>sensor.yambms_1_string_1_</code></td><td><code>sensor.kitchen_yambms_1_string_1_</code></td></tr>
+    <tr><td><code>switch.yambms_1_string_1_</code></td><td><code>switch.kitchen_yambms_1_string_1_</code></td></tr>
+    <tr><td><code>number.yambms_1_string_1_</code></td><td><code>number.kitchen_yambms_1_string_1_</code></td></tr>
+    <tr><td><code>sensor.yambms_2_string_2_</code></td><td><code>sensor.kitchen_yambms_2_string_2_</code></td></tr>
+    <tr><td><code>switch.yambms_2_string_2_</code></td><td><code>switch.kitchen_yambms_2_string_2_</code></td></tr>
+    <tr><td><code>number.yambms_2_string_2_</code></td><td><code>number.kitchen_yambms_2_string_2_</code></td></tr>
+  </table>
+
+  <div class="alert alert-warning">
+    <span class="alert-icon">⚠️</span>
+    <div>Always run with <code>--dry-run</code> first to preview changes before applying. The script creates a timestamped backup automatically but double-check the replacement count looks sensible before committing.</div>
+  </div>
+
+  <div class="alert alert-info">
+    <span class="alert-icon">ℹ️</span>
+    <div>Lovelace file location on Pi: <code>/usr/share/hassio/homeassistant/.storage/lovelace.lovelace</code></div>
+  </div>
+</div>
+
 
       <h3>NVS Switch State Warning</h3>
       <div class="alert alert-warning">
@@ -510,6 +555,71 @@ sudo python3 Recreate-HA-Dashboard/fix_ha_dashboard_46.py</code></pre>
         <div>All backups stored in <code>0_BACKUP\firmware\</code> within the working directory.</div>
       </div>
     </div>
+
+
+<div class="card">
+  <h3>Manual Backup via Command Line</h3>
+  <p style="font-size:.88rem;margin-bottom:10px;">The HA UI backup may fail after major version updates or when the database is locked. Use the supervisor CLI instead.</p>
+
+  <h3>Prerequisites — Check HA is Fully Up</h3>
+  <pre><code><span class="comment"># Confirm both containers are running before attempting backup</span>
+sudo docker ps | grep -E "raspberrypi4.*homeassistant|hassio_supervisor"
+
+<span class="comment"># Expected output:</span>
+<span class="comment"># raspberrypi4-64-homeassistant:2026.x.x   Up X minutes   homeassistant</span>
+<span class="comment"># aarch64-hassio-supervisor:latest          Up X minutes   hassio_supervisor</span></code></pre>
+
+  <h3>Trigger Backup</h3>
+  <pre><code><span class="comment"># Create a full backup via supervisor CLI</span>
+sudo ha backups new --name "Manual_backup_2026-06-28"
+
+<span class="comment"># Success response looks like:</span>
+<span class="comment"># Processing... Done.</span>
+<span class="comment"># job_id: 8b563db56481416496967b12f3592593</span>
+<span class="comment"># slug: f50fba6d</span></code></pre>
+
+  <h3>Verify Backup Created</h3>
+  <pre><code><span class="comment"># Check backup file appeared</span>
+ls -lh /usr/share/hassio/backup/
+
+<span class="comment"># Watch it grow in real time</span>
+watch -n 10 'ls -lh /usr/share/hassio/backup/'</code></pre>
+
+  <div class="alert alert-warning">
+    <span class="alert-icon">⚠️</span>
+    <div><strong>If backup fails with "Could not lock database":</strong> the recorder repack is still running and has the db locked. Wait 10–15 minutes and retry. If still stuck after hours, reboot the Pi with <code>sudo reboot</code>, wait 4 minutes for HA to fully start, then retry the backup command.</div>
+  </div>
+
+  <div class="alert alert-danger">
+    <span class="alert-icon">🚨</span>
+    <div><strong>Do NOT use these API endpoints</strong> — they fail on HA 2026.x:<br>
+    <code>POST /api/services/backup/create</code> → 400 Bad Request<br>
+    <code>POST /api/services/hassio/backup_full</code> → 500 Internal Server Error<br>
+    <code>POST /api/backup/generate</code> → 404 Not Found<br>
+    Use <code>sudo ha backups new</code> instead.</div>
+  </div>
+
+  <h3>DB Size Management</h3>
+  <pre><code><span class="comment"># Check database and disk usage</span>
+du -sh /usr/share/hassio/homeassistant/home-assistant_v2.db
+du -sh /usr/share/hassio/backup/
+df -h
+
+<span class="comment"># Purge old history via HA Developer Tools</span>
+<span class="comment"># http://192.168.1.13:8123/developer-tools/action</span>
+<span class="comment"># Action: recorder.purge</span>
+<span class="comment"># YAML: keep_days: 30 / repack: true</span>
+<span class="comment"># Note: repack locks db for extended period on large databases</span></code></pre>
+
+  <h3>Clean Up Old Backups</h3>
+  <pre><code><span class="comment"># List backups with sizes</span>
+du -sh /usr/share/hassio/backup/*
+
+<span class="comment"># Remove old backup (use sudo)</span>
+sudo rm -f /usr/share/hassio/backup/FILENAME.tar</code></pre>
+</div>
+
+
 
     <!-- 9. v1.6.0 Known Issue -->
     <div class="section" id="v160">
