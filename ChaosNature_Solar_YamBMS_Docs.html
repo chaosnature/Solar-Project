@@ -536,6 +536,55 @@ sudo python3 Recreate-HA-Dashboard/fix_ha_dashboard_46.py</code></pre>
       </div>
     </div>
 
+
+  <!-- 7a. Home Assistant Integration -->
+  <div class="card">
+  <h3>Inverter & Energy Integrations</h3>
+  <table>
+    <tr><th>Integration</th><th>Domain</th><th>Host/Details</th><th>Notes</th></tr>
+    <tr>
+      <td>Solarman</td>
+      <td><code>solarman</code></td>
+      <td><code>192.168.0.96:8899</code><br>Serial: <code>2309507303</code><br>Lookup: <code>sofar_lsw3.yaml</code></td>
+      <td>Sofar inverter (String-2/Shed). Some sensor values misread due to scaling issue in integration (e.g. Battery Voltage shows 5.56V instead of 55.6V)</td>
+    </tr>
+    <tr>
+      <td>SolaX Modbus — sofar-solax</td>
+      <td><code>solax_modbus</code></td>
+      <td><code>192.168.0.96</code><br>Plugin: <code>sofar_old</code><br>Baud: 19200</td>
+      <td>Secondary Sofar integration via serial. Fails to read serial number on boot — non-critical, logs /dev/ttyUSB0 errors</td>
+    </tr>
+    <tr>
+      <td>SolaX Modbus — SolaX</td>
+      <td><code>solax_modbus</code></td>
+      <td><code>192.168.0.96:502</code><br>Plugin: <code>sofar_old</code><br>TCP</td>
+      <td>Third Sofar/Solis integration attempt. Also logs /dev/ttyUSB0 errors on boot</td>
+    </tr>
+    <tr>
+      <td>Solis Cloud</td>
+      <td><code>solis</code></td>
+      <td>Portal: <code>soliscloud.com:13333</code><br>Plant: <code>Station 1C7F2E</code></td>
+      <td>Solis inverter (String-1/Kitchen) via cloud API</td>
+    </tr>
+    <tr>
+      <td>Octopus Energy</td>
+      <td><code>octopus_energy</code></td>
+      <td>Account: <code>A-2469801E</code><br>v18.3.1</td>
+      <td>Agile tariff rates. Broke on upgrade from v16 → v18 — fixed by deleting and re-adding entry with same API key</td>
+    </tr>
+  </table>
+
+  <div class="alert alert-warning">
+    <span class="alert-icon">⚠️</span>
+    <div>The <code>/dev/ttyUSB0</code> errors on boot from solax_modbus are harmless — no USB serial device is connected. These integrations connect via TCP/IP instead.</div>
+  </div>
+
+  <div class="alert alert-info">
+    <span class="alert-icon">ℹ️</span>
+    <div><strong>Octopus Energy re-add procedure (if breaks after update):</strong> Delete the <code>A-2469801E</code> entry → Add entry → Account ID: <code>A-2469801E</code> → API Key from <code>/usr/share/hassio/homeassistant/.storage/core.config_entries</code> on .46 → Calorific value: <code>40.0</code> → Restart HA.</div>
+  </div>
+</div>
+  
     <!-- 8. Backups -->
     <div class="section" id="backups">
       <div class="section-title">8. Backups</div>
