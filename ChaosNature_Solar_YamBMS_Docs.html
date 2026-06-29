@@ -793,6 +793,27 @@ sudo rm -f /usr/share/hassio/backup/FILENAME.tar</code></pre>
       </table>
 
       <div class="alert alert-success" style="margin-top:20px;">
+	  
+	  <!-- Release Updates --> 
+	  <tr>
+  <td>Evaluate YamBMS v1.7.0 when released</td>
+  <td><span class="badge badge-orange">MEDIUM</span></td>
+  <td>v1.7.0 in dev/main branch — NOT yet tagged as release. Will bring entity naming changes that will break HA dashboard. Do NOT upgrade until: (1) official release tagged on GitHub, (2) entity changes assessed, (3) fix_ha_dashboard scripts updated, (4) tested on String-2 first. Current v1.5.8 is stable — no rush.</td>
+</tr>
+<tr>
+  <td>Investigate v1.6.0 charge/discharge issue before considering v1.7.0</td>
+  <td><span class="badge badge-orange">MEDIUM</span></td>
+  <td>Root cause of v1.6.0 not charging/discharging still unknown. Spare chip (34:B7:DA:54:FD:18, COM6) available for testing. Understand v1.6.0 failure before attempting v1.7.0 upgrade.</td>
+</tr>
+
+
+<div class="alert alert-warning">
+  <span class="alert-icon">⚠️</span>
+  <div><strong>v1.7.0 warning:</strong> Community discussions confirm v1.7.0 will change HA entity naming conventions. Anyone on v1.5.x upgrading directly to v1.7.0 will need to update all dashboard entity IDs. Wait for official GitHub release tag before considering upgrade. Monitor: <code>github.com/Sleeper85/esphome-yambms/releases</code></div>
+</div>
+	  
+	 <!-- Release Updates -->  
+	 
         <span class="alert-icon">✅</span>
         <div><strong>Session complete June 28 2026.</strong> Both strings stable on v1.5.8 with drift fix. String-2 mid anchor flashed and live. JK native Charging Float Mode enabled on String-2 JK-PB units. Community thread active with good engagement from Sleeper85 and Haysdb. Monitoring in progress.</div>
       </div>
@@ -800,6 +821,8 @@ sudo rm -f /usr/share/hassio/backup/FILENAME.tar</code></pre>
 
   </main>
 </div>
+
+
 
 </body>
 </html>
