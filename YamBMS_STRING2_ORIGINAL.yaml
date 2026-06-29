@@ -500,7 +500,7 @@ interval:
             float avg = id(bms1_average_cell_voltage).state;
             float i   = id(bms1_current).state;
             if (!isnan(avg) && !isnan(i)) {
-              bool mid_rest = (avg >= 3.68f) && (avg <= 3.72f) && (i >= -2.0f) && (i <= 2.0f);
+              bool mid_rest = (avg >= 3.68f) && (avg <= 3.72f) && (i >= -10.0f) && (i <= 10.0f);
               if (mid_rest && !id(bms1_restore_pending) && !id(bms1_mid_anchored)) {
                 auto call = id(bms1_total_capacity_number).make_call();
                 call.set_value(94.0f);
@@ -519,7 +519,7 @@ interval:
             float avg = id(bms2_average_cell_voltage).state;
             float i   = id(bms2_current).state;
             if (!isnan(avg) && !isnan(i)) {
-              bool mid_rest = (avg >= 3.68f) && (avg <= 3.72f) && (i >= -2.0f) && (i <= 2.0f);
+              bool mid_rest = (avg >= 3.68f) && (avg <= 3.72f) && (i >= -10.0f) && (i <= 10.0f);
               if (mid_rest && !id(bms2_restore_pending) && !id(bms2_mid_anchored)) {
                 auto call = id(bms2_total_capacity_number).make_call();
                 call.set_value(94.0f);
@@ -533,6 +533,9 @@ interval:
               }
             }
           }
+
+
+
 
 
 
