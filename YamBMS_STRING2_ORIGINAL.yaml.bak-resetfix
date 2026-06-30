@@ -393,7 +393,7 @@ interval:
                 }
               } else {
                 id(bms1_soc_anchor_counter) = 0;
-                if (id(bms1_soc_anchored) && v < 53.0f) {
+                if (id(bms1_soc_anchored) && v < 55.0f) {
                   id(bms1_soc_anchored) = false;
                   ESP_LOGI("soc_fix", "BMS1: anchor reset V=%.2f", v);
                 }
@@ -419,7 +419,7 @@ interval:
                 }
               } else {
                 id(bms2_soc_anchor_counter) = 0;
-                if (id(bms2_soc_anchored) && v < 53.0f) {
+                if (id(bms2_soc_anchored) && v < 55.0f) {
                   id(bms2_soc_anchored) = false;
                   ESP_LOGI("soc_fix", "BMS2: anchor reset V=%.2f", v);
                 }
@@ -533,9 +533,6 @@ interval:
               }
             }
           }
-
-
-
 
 
 
