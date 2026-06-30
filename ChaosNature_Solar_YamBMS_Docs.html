@@ -830,10 +830,57 @@ sudo rm -f /usr/share/hassio/backup/FILENAME.tar</code></pre>
         <tr><td>Apply mid anchor to String-1</td><td><span class="badge badge-yellow">LOW</span></td><td>Only after String-2 mid anchor validated over several cycles</td></tr>
         <tr><td>Fix decimal precision on sensors</td><td><span class="badge badge-yellow">LOW</span></td><td>Add <code>accuracy_decimals: 2</code> to power/current/voltage sensors</td></tr>
       </table>
+	  
+	  
+<!-- 12. Glossary -->
+<div class="section" id="glossary">
+  <div class="section-title">12. Glossary & Acronyms</div>
+  <div class="card">
+    <table>
+      <tr><th>Term</th><th>Full Name</th><th>Description</th></tr>
+
+      <tr><td><code>SoC</code></td><td>State of Charge</td><td>Battery charge level as a percentage (0–100%). Calculated by the BMS coulomb counter — subject to drift over time without anchoring.</td></tr>
+      <tr><td><code>SoH</code></td><td>State of Health</td><td>Battery health as a percentage. Compares current capacity against original rated capacity. 98% = battery is still near new.</td></tr>
+      <tr><td><code>OVP</code></td><td>Over Voltage Protection</td><td>Cell-level protection threshold. BMS cuts charge if any cell exceeds this voltage. Your setting: 4.250–4.260V/cell.</td></tr>
+      <tr><td><code>OVPR</code></td><td>Over Voltage Protection Recovery</td><td>Voltage a cell must drop to before charging resumes after OVP triggers.</td></tr>
+      <tr><td><code>UVP</code></td><td>Under Voltage Protection</td><td>Cell-level protection threshold. BMS cuts discharge if any cell drops below this voltage. Your setting: 3.200V/cell.</td></tr>
+      <tr><td><code>UVPR</code></td><td>Under Voltage Protection Recovery</td><td>Voltage a cell must rise to before discharging resumes after UVP triggers.</td></tr>
+      <tr><td><code>OCP</code></td><td>Over Current Protection</td><td>BMS cuts off if charge or discharge current exceeds the maximum threshold.</td></tr>
+      <tr><td><code>CCL</code></td><td>Charge Current Limit</td><td>Maximum charge current requested by YamBMS to the inverter via CAN bus.</td></tr>
+      <tr><td><code>DCL</code></td><td>Discharge Current Limit</td><td>Maximum discharge current requested by YamBMS to the inverter via CAN bus.</td></tr>
+      <tr><td><code>CVL</code></td><td>Charge Voltage Limit</td><td>Maximum charge voltage requested by YamBMS to the inverter via CAN bus.</td></tr>
+      <tr><td><code>Bulk</code></td><td>Bulk Charge</td><td>Main charging phase. Inverter pushes maximum current until pack voltage reaches bulk voltage (57V on String-1, ~55.4V on String-2).</td></tr>
+      <tr><td><code>Float</code></td><td>Float Charge</td><td>Maintenance phase after bulk. Inverter holds pack at float voltage (56.6V) with minimal current to keep battery topped up without overcharging.</td></tr>
+      <tr><td><code>Rebulk</code></td><td>Rebulk Voltage</td><td>Pack voltage at which the inverter switches back from float to bulk charging. Your setting: ~52.6V (String-2) / 51.8V (String-1).</td></tr>
+      <tr><td><code>EOC</code></td><td>End of Charge</td><td>Charge cycle completion. YamBMS EOC timer confirms full charge is complete before switching to float.</td></tr>
+      <tr><td><code>Cut-Off</code></td><td>Cut-Off Charge Status</td><td>YamBMS charge status when charging is suspended — e.g. all cells balanced, BMS protection triggered, or v1.6.0 bug.</td></tr>
+      <tr><td><code>CAN bus</code></td><td>Controller Area Network</td><td>Communication protocol between YamBMS and the inverter. Uses PYLON V2 protocol. YamBMS sends battery state; inverter sends heartbeat acknowledgement (0x305 frame).</td></tr>
+      <tr><td><code>PYLON V2</code></td><td>Pylontech Protocol V2</td><td>CAN bus battery communication protocol used by YamBMS. Recognised by Solis, Sofar and most hybrid inverters.</td></tr>
+      <tr><td><code>Top Anchor</code></td><td>Top SoC Anchor</td><td>ESPHome drift fix trigger at near-full charge. String-1: V≥56.4V, I≤2A, SoC≥98%. String-2: V≥55.4V, I≤2A, SoC≥60%. Toggles capacity 95→94→95Ah to force JK-BMS coulomb recalibration.</td></tr>
+      <tr><td><code>Bottom Anchor</code></td><td>Bottom SoC Anchor</td><td>ESPHome drift fix trigger at near-empty. Both strings: V≤48.0V, I≥-2A, SoC≤5%. Same capacity toggle mechanism.</td></tr>
+      <tr><td><code>Mid Anchor</code></td><td>Mid-cycle SoC Anchor</td><td>ESPHome drift fix trigger at ~50% SoC. Avg cell voltage 3.68–3.72V, current ±10A. Fires once per voltage window crossing. String-2 only (experimental, confirmed working).</td></tr>
+      <tr><td><code>Coulomb Counter</code></td><td>—</td><td>Internal BMS mechanism that tracks SoC by measuring charge in and out (Ah). Drifts over time without a voltage reference reset. The core problem the drift fix solves.</td></tr>
+      <tr><td><code>Delta Cell V</code></td><td>Delta Cell Voltage</td><td>Difference between highest and lowest cell voltage in the pack. Indicates cell imbalance. JK-BMS balancing activates when delta exceeds balance trigger voltage (0.010V).</td></tr>
+      <tr><td><code>BLE</code></td><td>Bluetooth Low Energy</td><td>Communication between YamBMS ESP32 and JK-BMS units. Each AtomS3-Lite connects to 2 BMS units via BLE.</td></tr>
+      <tr><td><code>OTA</code></td><td>Over The Air</td><td>Firmware update delivered via WiFi without physical connection. Used for all normal flashing. USB factory flash reserved for recovery.</td></tr>
+      <tr><td><code>NVS</code></td><td>Non-Volatile Storage</td><td>ESP32 flash memory that persists switch states across OTA flashes. Relevant to v1.6.0 charge/discharge issue where switches defaulted OFF and NVS kept them OFF after reflashing.</td></tr>
+      <tr><td><code>JK-PB</code></td><td>JK-BMS PB Firmware</td><td>Newer JK-BMS firmware variant. Has native Charging Float Mode and SOC-100%/SOC-0% volt parameters. String-2 BMS units (JK-BMS 3 and 4) are JK-PB.</td></tr>
+      <tr><td><code>Last Complete Charge</code></td><td>—</td><td>YamBMS timestamp of last full charge cycle completion. String-2 last completed: 06:00 29 Jun 2026.</td></tr>
+      <tr><td><code>Force Bulk</code></td><td>Force Bulk Charge</td><td>YamBMS switch to manually trigger a full bulk charge cycle regardless of current SoC. Used for top balancing.</td></tr>
+      <tr><td><code>Auto CVL</code></td><td>Automatic Charge Voltage Limit</td><td>YamBMS automatically adjusts CVL based on cell voltages to optimise charging without overcharging weak cells.</td></tr>
+    </table>
+  </div>
+</div>
+
+
 
       <div class="alert alert-success" style="margin-top:20px;">
 	  
 	  <!-- Release Updates --> 
+	  
+	  
+	  
+	  
 	  <tr>
   <td>Evaluate YamBMS v1.7.0 when released</td>
   <td><span class="badge badge-orange">MEDIUM</span></td>
