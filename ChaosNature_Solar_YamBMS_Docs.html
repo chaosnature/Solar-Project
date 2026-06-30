@@ -397,6 +397,14 @@ Copy-Item ".esphome\build\yambms-1\.pioenvs\yambms-1\firmware.factory.bin" "0_BA
       <pre><code>esphome logs YamBMS_STRING1_ORIGINAL.yaml --device 192.168.0.101
 esphome logs YamBMS_STRING2_ORIGINAL.yaml --device 192.168.0.21</code></pre>
     </div>
+	
+
+	<h3>Archor monitoring</h3>
+      <pre><code>esphome logs YamBMS_STRING2_ORIGINAL.yaml --device 192.168.0.21 | Select-String "soc_fix"</code></pre>
+	  	<h3>Archor monitoring</h3>
+      <pre><code>esphome logs YamBMS_STRING1_ORIGINAL.yaml --device 192.168.0.101 | Select-String "soc_fix"</code></pre>
+    
+	
 
     <!-- 6. Compile Pipeline -->
     <div class="section" id="pipeline">
@@ -718,8 +726,6 @@ du -sh /usr/share/hassio/backup/*
 <span class="comment"># Remove old backup (use sudo)</span>
 sudo rm -f /usr/share/hassio/backup/FILENAME.tar</code></pre>
 </div>
-
-
 
 
     <!-- 9a. YamBMS Version Reference -->
