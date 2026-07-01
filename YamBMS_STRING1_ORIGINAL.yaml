@@ -375,7 +375,7 @@ interval:
       - lambda: |-
           // BMS1
           if (id(bms1_online_status).state) {
-            float v = id(bms1_total_voltage).state;
+            float v = id(yambms1_total_voltage).state;
             float i = id(bms1_current).state;
             float s = id(bms1_state_of_charge).state;
             if (!isnan(v) && !isnan(i) && !isnan(s)) {
@@ -401,7 +401,7 @@ interval:
           }
           // BMS2
           if (id(bms2_online_status).state) {
-            float v = id(bms2_total_voltage).state;
+            float v = id(yambms1_total_voltage).state;
             float i = id(bms2_current).state;
             float s = id(bms2_state_of_charge).state;
             if (!isnan(v) && !isnan(i) && !isnan(s)) {
@@ -454,7 +454,7 @@ interval:
       - lambda: |-
           // BMS1 bottom anchor
           if (id(bms1_online_status).state) {
-            float v = id(bms1_total_voltage).state;
+            float v = id(yambms1_total_voltage).state;
             float i = id(bms1_current).state;
             float s = id(bms1_state_of_charge).state;
             if (!isnan(v) && !isnan(i) && !isnan(s)) {
@@ -473,7 +473,7 @@ interval:
           }
           // BMS2 bottom anchor
           if (id(bms2_online_status).state) {
-            float v = id(bms2_total_voltage).state;
+            float v = id(yambms1_total_voltage).state;
             float i = id(bms2_current).state;
             float s = id(bms2_state_of_charge).state;
             if (!isnan(v) && !isnan(i) && !isnan(s)) {
@@ -532,6 +532,7 @@ interval:
               }
             }
           }
+
 
 
 
