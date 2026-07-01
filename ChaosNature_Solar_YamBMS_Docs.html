@@ -399,10 +399,13 @@ esphome logs YamBMS_STRING2_ORIGINAL.yaml --device 192.168.0.21</code></pre>
     </div>
 	
 
-	<h3>Archor monitoring</h3>
-      <pre><code>esphome logs YamBMS_STRING2_ORIGINAL.yaml --device 192.168.0.21 | Select-String "soc_fix"</code></pre>
-	  	<h3>Archor monitoring</h3>
-      <pre><code>esphome logs YamBMS_STRING1_ORIGINAL.yaml --device 192.168.0.101 | Select-String "soc_fix"</code></pre>
+	<h3>Archor monitoring 1</h3>
+      <pre><code>esphome logs YamBMS_STRING2_ORIGINAL.yaml --device 192.168.0.21 | Select-String "soc_fix"
+esphome logs YamBMS_STRING1_ORIGINAL.yaml --device 192.168.0.101 | Select-String "soc_fix"</code></pre>
+
+	  	<h3>Archor monitoring 2</h3>
+      <pre><code>esphome logs YamBMS_STRING2_ORIGINAL.yaml --device 192.168.0.21 | Select-String "soc_fix|BMS1|BMS2|Float|Bulk"
+esphome logs YamBMS_STRING1_ORIGINAL.yaml --device 192.168.0.101 | Select-String "soc_fix|BMS1|BMS2|Float|Bulk"</code></pre>
     
 	
 
