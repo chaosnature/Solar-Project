@@ -380,7 +380,7 @@ interval:
             float i = id(bms1_current).state;
             float s = id(bms1_state_of_charge).state;
             if (!isnan(v) && !isnan(i) && !isnan(s)) {
-              bool full = (v >= 55.4f) && (i <= 2.0f) && (s >= 60.0f);
+              bool full = (v >= 55.0f) && (i <= 2.0f) && (s >= 60.0f);
               if (full) {
                 id(bms1_soc_anchor_counter)++;
                 if (id(bms1_soc_anchor_counter) >= 6 && !id(bms1_soc_anchored)) {
@@ -406,7 +406,7 @@ interval:
             float i = id(bms2_current).state;
             float s = id(bms2_state_of_charge).state;
             if (!isnan(v) && !isnan(i) && !isnan(s)) {
-              bool full = (v >= 55.4f) && (i <= 2.0f) && (s >= 60.0f);
+              bool full = (v >= 55.0f) && (i <= 2.0f) && (s >= 60.0f);
               if (full) {
                 id(bms2_soc_anchor_counter)++;
                 if (id(bms2_soc_anchor_counter) >= 6 && !id(bms2_soc_anchored)) {
@@ -533,6 +533,9 @@ interval:
               }
             }
           }
+
+
+
 
 
 
