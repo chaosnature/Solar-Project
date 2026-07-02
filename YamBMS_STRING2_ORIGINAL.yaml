@@ -380,7 +380,6 @@ interval:
             float i = id(bms1_current).state;
             float s = id(bms1_state_of_charge).state;
             if (!isnan(v) && !isnan(i) && !isnan(s)) {
-              ESP_LOGI("soc_fix", "BMS1 DEBUG: V=%.2f I=%.2f SoC=%.0f%% full=%d counter=%d", v, i, s, (v >= 55.0f) && (i <= 3.0f) && (s >= 60.0f), id(bms1_soc_anchor_counter));
               bool full = (v >= 55.0f) && (i <= 3.0f) && (s >= 60.0f);
               if (full) {
                 id(bms1_soc_anchor_counter)++;
@@ -460,7 +459,6 @@ interval:
             float i = id(bms1_current).state;
             float s = id(bms1_state_of_charge).state;
             if (!isnan(v) && !isnan(i) && !isnan(s)) {
-              ESP_LOGI("soc_fix", "BMS1 DEBUG: V=%.2f I=%.2f SoC=%.0f%% full=%d counter=%d", v, i, s, (v >= 55.0f) && (i <= 3.0f) && (s >= 60.0f), id(bms1_soc_anchor_counter));
               bool near_empty = (v <= 48.0f) && (i >= -2.0f) && (s <= 5.0f);
               if (near_empty && !id(bms1_restore_pending)) {
                 auto call = id(bms1_total_capacity_number).make_call();
@@ -529,6 +527,9 @@ interval:
               }
             }
           }
+
+
+
 
 
 
