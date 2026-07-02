@@ -1,64 +1,202 @@
-# SoC Coulomb Drift Fix
-# Triggers when BMS reaches full charge conditions
-# Toggles total_battery_capacity to force coulomb counter recalibration
-# Applies independently per BMS
+# YamBMS SoC Coulomb Drift Fix - Corrected July 2026
+# Fixes two bugs from original implementation:
+# Bug 1: Use yambms1_total_voltage (YamBMS-processed) not bms1_total_voltage (raw BLE, ~0.14V lower)
+# Bug 2: Removed bottom anchor counter reset that sabotaged top anchor counter
+#
+# Adjust voltage thresholds to match YOUR inverter charge ceiling.
+# Check yambms1_total_voltage in HA at peak charge - not the raw BMS sensor.
+#
+# Tested: YamBMS v1.5.8, ESPHome 2025.11.0, M5Stack AtomS3-Lite, JK-BMS BLE
 
 globals:
-  - id: bms${bms_id}_soc_anchor_counter
+  - id: bms1_soc_anchor_counter
     type: int
     restore_value: false
     initial_value: '0'
-  - id: bms${bms_id}_soc_anchored
+  - id: bms1_soc_anchored
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+  - id: bms1_restore_pending
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+  - id: bms1_mid_anchored
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+  - id: bms2_soc_anchor_counter
+    type: int
+    restore_value: false
+    initial_value: '0'
+  - id: bms2_soc_anchored
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+  - id: bms2_restore_pending
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+  - id: bms2_mid_anchored
     type: bool
     restore_value: false
     initial_value: 'false'
 
 interval:
+  # TOP ANCHOR - fires at full charge
+  # Adjust v >= 55.0f to match your inverter charge ceiling (yambms1_total_voltage in HA)
   - interval: 5s
     then:
       - lambda: |-
-          // Skip if BMS not online
-          if (!id(bms${bms_id}_online_status).state) {
-            id(bms${bms_id}_soc_anchor_counter) = 0;
-            id(bms${bms_id}_soc_anchored) = false;
-            return;
+          // BMS1 top anchor
+          if (id(bms1_online_status).state) {
+            float v = id(yambms1_total_voltage).state;  // FIX: YamBMS voltage not raw BLE
+            float i = id(bms1_current).state;
+            float s = id(bms1_state_of_charge).state;
+            if (!isnan(v) && !isnan(i) && !isnan(s)) {
+              bool full = (v >= 55.0f) && (i <= 3.0f) && (s >= 60.0f);
+              if (full) {
+                id(bms1_soc_anchor_counter)++;
+                if (id(bms1_soc_anchor_counter) >= 6 && !id(bms1_soc_anchored)) {
+                  auto call = id(bms1_total_capacity_number).make_call();
+                  call.set_value(94.0f);
+                  call.perform();
+                  id(bms1_soc_anchored) = true;
+                  id(bms1_restore_pending) = true;
+                  ESP_LOGI("soc_fix", "BMS1: anchor triggered V=%.2f I=%.2f SoC=%.0f%%", v, i, s);
+                }
+              } else {
+                id(bms1_soc_anchor_counter) = 0;
+                if (id(bms1_soc_anchored) && v < 53.0f) {
+                  id(bms1_soc_anchored) = false;
+                  ESP_LOGI("soc_fix", "BMS1: anchor reset V=%.2f", v);
+                }
+              }
+            }
+          }
+          // BMS2 top anchor
+          if (id(bms2_online_status).state) {
+            float v = id(yambms1_total_voltage).state;  // FIX: YamBMS voltage not raw BLE
+            float i = id(bms2_current).state;
+            float s = id(bms2_state_of_charge).state;
+            if (!isnan(v) && !isnan(i) && !isnan(s)) {
+              bool full = (v >= 55.0f) && (i <= 3.0f) && (s >= 60.0f);
+              if (full) {
+                id(bms2_soc_anchor_counter)++;
+                if (id(bms2_soc_anchor_counter) >= 6 && !id(bms2_soc_anchored)) {
+                  auto call = id(bms2_total_capacity_number).make_call();
+                  call.set_value(94.0f);
+                  call.perform();
+                  id(bms2_soc_anchored) = true;
+                  id(bms2_restore_pending) = true;
+                  ESP_LOGI("soc_fix", "BMS2: anchor triggered V=%.2f I=%.2f SoC=%.0f%%", v, i, s);
+                }
+              } else {
+                id(bms2_soc_anchor_counter) = 0;
+                if (id(bms2_soc_anchored) && v < 53.0f) {
+                  id(bms2_soc_anchored) = false;
+                  ESP_LOGI("soc_fix", "BMS2: anchor reset V=%.2f", v);
+                }
+              }
+            }
           }
 
-          float voltage  = id(bms${bms_id}_total_voltage).state;
-          float current  = id(bms${bms_id}_current).state;
-          float soc      = id(bms${bms_id}_state_of_charge).state;
+  # RESTORE - toggles capacity back to 95Ah after any anchor
+  - interval: 10s
+    then:
+      - lambda: |-
+          if (id(bms1_restore_pending)) {
+            auto call = id(bms1_total_capacity_number).make_call();
+            call.set_value(95.0f);
+            call.perform();
+            id(bms1_restore_pending) = false;
+            ESP_LOGI("soc_fix", "BMS1: capacity restored to 95Ah");
+          }
+          if (id(bms2_restore_pending)) {
+            auto call = id(bms2_total_capacity_number).make_call();
+            call.set_value(95.0f);
+            call.perform();
+            id(bms2_restore_pending) = false;
+            ESP_LOGI("soc_fix", "BMS2: capacity restored to 95Ah");
+          }
 
-          if (isnan(voltage) || isnan(current) || isnan(soc)) return;
-
-          // Full charge conditions
-          // voltage >= 56.4V, current <= 2A, SoC >= 98%
-          bool near_full = (voltage >= 56.4f) && (current <= 2.0f) && (soc >= 98.0f);
-
-          if (near_full) {
-            id(bms${bms_id}_soc_anchor_counter)++;
-
-            // Hold 30 seconds (6 x 5s) before triggering
-            if (id(bms${bms_id}_soc_anchor_counter) >= 6 && !id(bms${bms_id}_soc_anchored)) {
-              // Toggle capacity to force BMS coulomb counter recalibration
-              auto call1 = id(bms${bms_id}_total_capacity_number).make_call();
-              call1.set_value(94.0f);
-              call1.perform();
-
-              // Restore after 2 seconds
-              delay(2000);
-              auto call2 = id(bms${bms_id}_total_capacity_number).make_call();
-              call2.set_value(95.0f);
-              call2.perform();
-
-              ESP_LOGI("soc_fix", "BMS${bms_id}: coulomb anchor triggered V=%.2f I=%.2f SoC=%.0f%%",
-                       voltage, current, soc);
-              id(bms${bms_id}_soc_anchored) = true;
+  # BOTTOM ANCHOR - fires near empty
+  # FIX: removed "if (v > 50.0f) { counter = 0; }" that was resetting top anchor counter
+  - interval: 5s
+    then:
+      - lambda: |-
+          // BMS1 bottom anchor
+          if (id(bms1_online_status).state) {
+            float v = id(yambms1_total_voltage).state;
+            float i = id(bms1_current).state;
+            float s = id(bms1_state_of_charge).state;
+            if (!isnan(v) && !isnan(i) && !isnan(s)) {
+              bool near_empty = (v <= 48.0f) && (i >= -2.0f) && (s <= 5.0f);
+              if (near_empty && !id(bms1_restore_pending)) {
+                auto call = id(bms1_total_capacity_number).make_call();
+                call.set_value(94.0f);
+                call.perform();
+                id(bms1_restore_pending) = true;
+                ESP_LOGI("soc_fix", "BMS1: BOTTOM anchor triggered V=%.2f I=%.2f SoC=%.0f%%", v, i, s);
+              }
             }
-          } else {
-            id(bms${bms_id}_soc_anchor_counter) = 0;
-            // Reset anchor flag when voltage drops (new discharge cycle started)
-            if (id(bms${bms_id}_soc_anchored) && voltage < 55.0f) {
-              id(bms${bms_id}_soc_anchored) = false;
-              ESP_LOGI("soc_fix", "BMS${bms_id}: anchor reset, new cycle V=%.2f", voltage);
+          }
+          // BMS2 bottom anchor
+          if (id(bms2_online_status).state) {
+            float v = id(yambms1_total_voltage).state;
+            float i = id(bms2_current).state;
+            float s = id(bms2_state_of_charge).state;
+            if (!isnan(v) && !isnan(i) && !isnan(s)) {
+              bool near_empty = (v <= 48.0f) && (i >= -2.0f) && (s <= 5.0f);
+              if (near_empty && !id(bms2_restore_pending)) {
+                auto call = id(bms2_total_capacity_number).make_call();
+                call.set_value(94.0f);
+                call.perform();
+                id(bms2_restore_pending) = true;
+                ESP_LOGI("soc_fix", "BMS2: BOTTOM anchor triggered V=%.2f I=%.2f SoC=%.0f%%", v, i, s);
+              }
+            }
+          }
+
+  # MID ANCHOR - fires at ~3.70V avg cell (~50% SoC rest point)
+  - interval: 5s
+    then:
+      - lambda: |-
+          // BMS1 mid anchor
+          if (id(bms1_online_status).state) {
+            float avg = id(bms1_average_cell_voltage).state;
+            float i   = id(bms1_current).state;
+            if (!isnan(avg) && !isnan(i)) {
+              bool mid_rest = (avg >= 3.68f) && (avg <= 3.72f) && (i >= -10.0f) && (i <= 10.0f);
+              if (mid_rest && !id(bms1_restore_pending) && !id(bms1_mid_anchored)) {
+                auto call = id(bms1_total_capacity_number).make_call();
+                call.set_value(94.0f);
+                call.perform();
+                id(bms1_restore_pending) = true;
+                id(bms1_mid_anchored) = true;
+                ESP_LOGI("soc_fix", "BMS1: MID anchor triggered avg=%.3fV I=%.2fA", avg, i);
+              }
+              if (avg < 3.60f || avg > 3.80f) {
+                id(bms1_mid_anchored) = false;
+              }
+            }
+          }
+          // BMS2 mid anchor
+          if (id(bms2_online_status).state) {
+            float avg = id(bms2_average_cell_voltage).state;
+            float i   = id(bms2_current).state;
+            if (!isnan(avg) && !isnan(i)) {
+              bool mid_rest = (avg >= 3.68f) && (avg <= 3.72f) && (i >= -10.0f) && (i <= 10.0f);
+              if (mid_rest && !id(bms2_restore_pending) && !id(bms2_mid_anchored)) {
+                auto call = id(bms2_total_capacity_number).make_call();
+                call.set_value(94.0f);
+                call.perform();
+                id(bms2_restore_pending) = true;
+                id(bms2_mid_anchored) = true;
+                ESP_LOGI("soc_fix", "BMS2: MID anchor triggered avg=%.3fV I=%.2fA", avg, i);
+              }
+              if (avg < 3.60f || avg > 3.80f) {
+                id(bms2_mid_anchored) = false;
+              }
             }
           }
