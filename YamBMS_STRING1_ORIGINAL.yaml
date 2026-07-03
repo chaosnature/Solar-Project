@@ -458,7 +458,7 @@ interval:
             float i = id(bms1_current).state;
             float s = id(bms1_state_of_charge).state;
             if (!isnan(v) && !isnan(i) && !isnan(s)) {
-              bool near_empty = (v <= 48.0f) && (i >= -5.0f) && (i <= 2.0f);
+              bool near_empty = (v >= 40.0f) && (v <= 48.0f) && (i >= -5.0f) && (i <= 2.0f);
               if (near_empty && !id(bms1_restore_pending)) {
                 auto call = id(bms1_total_capacity_number).make_call();
                 call.set_value(94.0f);
@@ -474,7 +474,7 @@ interval:
             float i = id(bms2_current).state;
             float s = id(bms2_state_of_charge).state;
             if (!isnan(v) && !isnan(i) && !isnan(s)) {
-              bool near_empty = (v <= 48.0f) && (i >= -5.0f) && (i <= 2.0f);
+              bool near_empty = (v >= 40.0f) && (v <= 48.0f) && (i >= -5.0f) && (i <= 2.0f);
               if (near_empty && !id(bms2_restore_pending)) {
                 auto call = id(bms2_total_capacity_number).make_call();
                 call.set_value(94.0f);
@@ -526,6 +526,9 @@ interval:
               }
             }
           }
+
+
+
 
 
 
