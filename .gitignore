@@ -5,3 +5,6 @@
 /secrets.yaml
 *.bin
 *.factory.bin
+
+# Private doc with credentials - local only
+ChaosNature_Solar_YamBMS_Docs.html
