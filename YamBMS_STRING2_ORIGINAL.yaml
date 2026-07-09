@@ -380,7 +380,7 @@ interval:
             float i = id(bms1_current).state;
             float s = id(bms1_state_of_charge).state;
             if (!isnan(v) && !isnan(i) && !isnan(s)) {
-              bool full = (v >= 54.5f) && (i <= 3.0f) && (s >= 60.0f);
+              bool full = (v >= 56.5f) && (i <= 3.0f) && (s >= 60.0f);
               if (full) {
                 id(bms1_soc_anchor_counter)++;
                 if (id(bms1_soc_anchor_counter) >= 6 && !id(bms1_soc_anchored)) {
@@ -393,7 +393,7 @@ interval:
                 }
               } else {
                 id(bms1_soc_anchor_counter) = 0;
-                if (id(bms1_soc_anchored) && v < 52.5f) {
+                if (id(bms1_soc_anchored) && v < 54.0f) {
                   id(bms1_soc_anchored) = false;
                   ESP_LOGI("soc_fix", "BMS1: anchor reset V=%.2f", v);
                 }
@@ -406,7 +406,7 @@ interval:
             float i = id(bms2_current).state;
             float s = id(bms2_state_of_charge).state;
             if (!isnan(v) && !isnan(i) && !isnan(s)) {
-              bool full = (v >= 54.5f) && (i <= 3.0f) && (s >= 60.0f);
+              bool full = (v >= 56.5f) && (i <= 3.0f) && (s >= 60.0f);
               if (full) {
                 id(bms2_soc_anchor_counter)++;
                 if (id(bms2_soc_anchor_counter) >= 6 && !id(bms2_soc_anchored)) {
@@ -419,7 +419,7 @@ interval:
                 }
               } else {
                 id(bms2_soc_anchor_counter) = 0;
-                if (id(bms2_soc_anchored) && v < 52.5f) {
+                if (id(bms2_soc_anchored) && v < 54.0f) {
                   id(bms2_soc_anchored) = false;
                   ESP_LOGI("soc_fix", "BMS2: anchor reset V=%.2f", v);
                 }
@@ -527,6 +527,7 @@ interval:
               }
             }
           }
+
 
 
 
