@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚡ Solar Battery Monitor</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #020617; font-family: 'Segoe UI', Inter, sans-serif; color: #f1f5f9; min-height: 100vh; padding: 20px; }
+
+  /* Login */
+  .login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+  .login-box { background: #0f172a; border: 1px solid #1e293b; border-radius: 16px; padding: 40px; width: 380px; }
+  .login-box h1 { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+  .login-box p { color: #64748b; font-size: 13px; margin-bottom: 20px; }
+  .login-box input { width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 10px 14px; color: #f1f5f9; font-size: 13px; outline: none; margin-bottom: 10px; }
+  .login-box button { width: 100%; background: #3b82f6; border: none; border-radius: 8px; padding: 10px 0; color: #fff; font-weight: 700; font-size: 14px; cursor: pointer; }
+
+  /* Header */
+  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+  .header h1 { font-size: 20px; font-weight: 800; }
+  .header .sub { color: #475569; font-size: 12px; margin-top: 2px; }
+  .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 8px 14px; color: #94a3b8; font-size: 12px; cursor: pointer; }
+  .btn.active { background: #1e3a5f; border-color: #3b82f6; color: #60a5fa; }
+  .btn.danger { color: #64748b; }
+
+  /* Error */
+  .error-box { background: #7c2d12; border: 1px solid #ef4444; border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; color: #fca5a5; font-size: 13px; }
+
+  /* Strings layout */
+  .strings { display: flex; gap: 16px; flex-wrap: wrap; }
+  .string-panel { background: #0f172a; border: 1px solid #1e293b; border-radius: 14px; padding: 20px; flex: 1; min-width: 300px; }
+  .string-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+  .string-title-inv { color: #94a3b8; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 2px; }
+  .string-title { font-size: 18px; font-weight: 800; }
+  .string-pack { text-align: right; }
+  .string-pack .pack-label { color: #64748b; font-size: 10px; }
+  .string-pack .pack-volt { color: #e2e8f0; font-size: 15px; font-weight: 700; }
+  .string-pack .pack-sub { color: #64748b; font-size: 10px; margin-top: 2px; }
+
+  /* Alerts inside string */
+  .alert { border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; font-size: 12px; }
+  .alert-red { background: #7c2d12; border: 1px solid #ef4444; color: #fca5a5; }
+  .alert-yellow { background: #78350f; border: 1px solid #f59e0b; color: #fde68a; }
+
+  /* BMS cards grid */
+  .bms-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .bms-card { background: #020617; border: 1px solid #1e293b; border-radius: 10px; padding: 14px 16px; }
+  .bms-card.warn-low { border-color: #ef4444; box-shadow: 0 0 12px #ef444430; }
+  .bms-card-header { display: flex; align-items: center; margin-bottom: 8px; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; flex-shrink: 0; }
+  .dot.on { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+  .dot.off { background: #ef4444; }
+  .bms-label { color: #e2e8f0; font-weight: 700; font-size: 12px; }
+  .bms-warn-tag { margin-left: auto; color: #ef4444; font-size: 11px; font-weight: 700; }
+  .bms-soc { font-size: 28px; font-weight: 800; margin-bottom: 4px; }
+  .bms-soc.low { color: #ef4444; }
+  .bms-soc .unit { font-size: 14px; color: #64748b; }
+  .soc-bar-wrap { background: #1e293b; border-radius: 6px; height: 10px; overflow: hidden; margin-bottom: 10px; }
+  .soc-bar { height: 100%; border-radius: 6px; transition: width 0.5s; }
+  .bms-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  .stat-label { color: #64748b; font-size: 10px; margin-bottom: 1px; }
+  .stat-val { color: #e2e8f0; font-size: 13px; font-weight: 600; }
+  .stat-curr { grid-column: 1 / -1; margin-top: 4px; }
+  .curr-charging { color: #22c55e; }
+  .curr-discharging { color: #f59e0b; }
+  .curr-idle { color: #94a3b8; }
+
+  /* Gaps row */
+  .gaps-row { margin-top: 12px; color: #64748b; font-size: 12px; }
+  .gaps-row span { color: #94a3b8; font-weight: 600; }
+
+  /* Equalisation panel */
+  .eq-panel { margin-top: 16px; background: #0f172a; border: 1px solid #1e293b; border-radius: 14px; padding: 20px; }
+  .eq-title { color: #94a3b8; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+  .eq-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .eq-card { background: #020617; border-radius: 8px; padding: 12px; border: 1px solid #1e293b; }
+  .eq-card.warn { border-color: #ef4444; }
+  .eq-card-label { color: #64748b; font-size: 10px; margin-bottom: 4px; }
+  .eq-val { font-size: 18px; font-weight: 800; }
+  .eq-val.safe { color: #22c55e; }
+  .eq-val.warn { color: #ef4444; }
+  .eq-status { color: #475569; font-size: 10px; margin-top: 2px; }
+
+  @media (max-width: 700px) {
+    .bms-grid { grid-template-columns: 1fr; }
+    .eq-grid { grid-template-columns: 1fr 1fr; }
+    .strings { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+// ── CONFIG ───────────────────────────────────────────────
+const HA_URL = "http://192.168.1.13:8123";
+const TOKEN_KEY = "solar_ha_token";
+// ────────────────────────────────────────────────────────
+
+const ENTITIES = {
+  bms1_soc:    "sensor.kitchen_yambms_1_string_1_jk_bms_1_state_of_charge",
+  bms2_soc:    "sensor.kitchen_yambms_1_string_1_jk_bms_2_state_of_charge",
+  bms1_volt:   "sensor.kitchen_yambms_1_string_1_jk_bms_1_total_voltage",
+  bms2_volt:   "sensor.kitchen_yambms_1_string_1_jk_bms_2_total_voltage",
+  bms1_curr:   "sensor.kitchen_yambms_1_string_1_jk_bms_1_current",
+  bms2_curr:   "sensor.kitchen_yambms_1_string_1_jk_bms_2_current",
+  bms1_cell:   "sensor.kitchen_yambms_1_string_1_jk_bms_1_average_cell_voltage",
+  bms2_cell:   "sensor.kitchen_yambms_1_string_1_jk_bms_2_average_cell_voltage",
+  bms1_online: "binary_sensor.kitchen_yambms_1_string_1_jk_bms_1_online_status",
+  bms2_online: "binary_sensor.kitchen_yambms_1_string_1_jk_bms_2_online_status",
+  yam1_ccl:    "sensor.kitchen_yambms_1_string_1_yambms_1_requested_charge_current",
+  yam1_cvl:    "sensor.kitchen_yambms_1_string_1_yambms_1_requested_charge_voltage",
+  yam1_volt:   "sensor.kitchen_yambms_1_string_1_yambms_1_total_voltage",
+  bms3_soc:    "sensor.kitchen_yambms_2_string_2_jk_bms_3_state_of_charge",
+  bms4_soc:    "sensor.kitchen_yambms_2_string_2_jk_bms_4_state_of_charge",
+  bms3_volt:   "sensor.kitchen_yambms_2_string_2_jk_bms_3_total_voltage",
+  bms4_volt:   "sensor.kitchen_yambms_2_string_2_jk_bms_4_total_voltage",
+  bms3_curr:   "sensor.kitchen_yambms_2_string_2_jk_bms_3_current",
+  bms4_curr:   "sensor.kitchen_yambms_2_string_2_jk_bms_4_current",
+  bms3_cell:   "sensor.kitchen_yambms_2_string_2_jk_bms_3_average_cell_voltage",
+  bms4_cell:   "sensor.kitchen_yambms_2_string_2_jk_bms_4_average_cell_voltage",
+  bms3_online: "binary_sensor.kitchen_yambms_2_string_2_jk_bms_3_online_status",
+  bms4_online: "binary_sensor.kitchen_yambms_2_string_2_jk_bms_4_online_status",
+  yam2_ccl:    "sensor.kitchen_yambms_2_string_2_yambms_2_requested_charge_current",
+  yam2_cvl:    "sensor.kitchen_yambms_2_string_2_yambms_2_requested_charge_voltage",
+  yam2_volt:   "sensor.kitchen_yambms_2_string_2_yambms_2_total_voltage",
+};
+
+let token = localStorage.getItem(TOKEN_KEY) || "";
+let data = {};
+let autoRefresh = true;
+let refreshTimer = null;
+let lastUpdate = null;
+
+async function fetchAll() {
+  const results = await Promise.all(
+    Object.entries(ENTITIES).map(async ([key, entity]) => {
+      const res = await fetch(`${HA_URL}/api/states/${entity}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+      const json = await res.json();
+      return [key, json.state];
+    })
+  );
+  return Object.fromEntries(results);
+}
+
+function n(v) { return parseFloat(v) || 0; }
+
+function socBarColor(pct) {
+  return pct > 60 ? "#22c55e" : pct > 25 ? "#f59e0b" : "#ef4444";
+}
+
+function currClass(c) {
+  if (c > 0.5) return "curr-charging";
+  if (c < -0.5) return "curr-discharging";
+  return "curr-idle";
+}
+function currLabel(c) {
+  if (c > 0.5) return `+${c.toFixed(2)}A ▲ charging`;
+  if (c < -0.5) return `${c.toFixed(2)}A ▼ discharging`;
+  return `${c.toFixed(2)}A ● idle`;
+}
+
+function bmsCardHTML(label, soc, volt, curr, cell, online, warnTag) {
+  const socNum = n(soc);
+  const currNum = n(curr);
+  const barColor = socBarColor(socNum);
+  return `
+    <div class="bms-card ${warnTag ? 'warn-low' : ''}">
+      <div class="bms-card-header">
+        <span class="dot ${online === 'on' ? 'on' : 'off'}"></span>
+        <span class="bms-label">${label}</span>
+        ${warnTag ? `<span class="bms-warn-tag">⚠ ${warnTag}</span>` : ''}
+      </div>
+      <div class="bms-soc ${socNum < 10 ? 'low' : ''}">${socNum}<span class="unit">%</span></div>
+      <div class="soc-bar-wrap"><div class="soc-bar" style="width:${socNum}%;background:${barColor}"></div></div>
+      <div class="bms-stats">
+        <div><div class="stat-label">VOLTAGE</div><div class="stat-val">${n(volt).toFixed(2)}V</div></div>
+        <div><div class="stat-label">AVG CELL</div><div class="stat-val">${n(cell).toFixed(3)}V</div></div>
+        <div class="stat-curr"><div class="stat-label">CURRENT</div><div class="stat-val ${currClass(currNum)}">${currLabel(currNum)}</div></div>
+      </div>
+    </div>`;
+}
+
+function stringPanelHTML(title, inv, bA, bB, yam) {
+  const socA = n(data[bA.soc]), socB = n(data[bB.soc]);
+  const voltA = n(data[bA.volt]), voltB = n(data[bB.volt]);
+  const currA = n(data[bA.curr]), currB = n(data[bB.curr]);
+  const socGap = Math.abs(socA - socB);
+  const voltGap = Math.abs(voltA - voltB);
+  const crossFlow = (currA > 2 && currB < -2) || (currA < -2 && currB > 2);
+  const highCurr = Math.abs(currA) > 15 || Math.abs(currB) > 15;
+
+  const alerts = [
+    socGap > 10 ? `<div class="alert alert-red">⚠ SoC gap: ${socGap.toFixed(0)}% — drift detected, anchor corrects on next charge cycle</div>` : '',
+    voltGap > 1.0 ? `<div class="alert alert-red">🚨 Voltage gap: ${voltGap.toFixed(2)}V — batteries fighting! Disconnect one and equalise</div>` : '',
+    crossFlow ? `<div class="alert alert-yellow">⚡ Cross-current — one battery charging the other. Check fuse & connections.</div>` : '',
+    highCurr ? `<div class="alert alert-yellow">⚠ High current (${Math.max(Math.abs(currA),Math.abs(currB)).toFixed(1)}A) — check inverter limits</div>` : '',
+  ].join('');
+
+  return `
+    <div class="string-panel">
+      <div class="string-header">
+        <div>
+          <div class="string-title-inv">${inv}</div>
+          <div class="string-title">${title}</div>
+        </div>
+        <div class="string-pack">
+          <div class="pack-label">YamBMS PACK</div>
+          <div class="pack-volt">${n(data[yam.volt]).toFixed(2)}V</div>
+          <div class="pack-sub">CCL ${n(data[yam.ccl]).toFixed(0)}A · CVL ${n(data[yam.cvl]).toFixed(1)}V</div>
+        </div>
+      </div>
+      ${alerts}
+      <div class="bms-grid">
+        ${bmsCardHTML(bA.label, data[bA.soc], data[bA.volt], data[bA.curr], data[bA.cell], data[bA.online], voltGap > 1.0 && voltA < voltB ? 'LOW' : '')}
+        ${bmsCardHTML(bB.label, data[bB.soc], data[bB.volt], data[bB.curr], data[bB.cell], data[bB.online], voltGap > 1.0 && voltB < voltA ? 'LOW' : '')}
+      </div>
+      <div class="gaps-row">Gaps → Voltage: <span>${voltGap.toFixed(2)}V</span> &nbsp;|&nbsp; SoC: <span>${socGap.toFixed(0)}%</span></div>
+    </div>`;
+}
+
+function eqCardHTML(label, a, b, unit) {
+  const gap = Math.abs(a - b);
+  const safe = unit ? gap < 10 : gap < 0.5;
+  return `
+    <div class="eq-card ${safe ? '' : 'warn'}">
+      <div class="eq-card-label">${label}</div>
+      <div class="eq-val ${safe ? 'safe' : 'warn'}">${unit ? gap.toFixed(0) : gap.toFixed(2)}${unit || 'V'}</div>
+      <div class="eq-status">${safe ? '✓ safe' : '⚠ equalise'}</div>
+    </div>`;
+}
+
+function renderDashboard(err) {
+  const now = new Date();
+  document.getElementById('app').innerHTML = `
+    <div class="header">
+      <div>
+        <h1>⚡ Solar Battery Monitor</h1>
+        <div class="sub">${lastUpdate ? `Updated ${lastUpdate.toLocaleTimeString()}` : 'Connecting...'}</div>
+      </div>
+      <div class="btn-group">
+        <button class="btn" onclick="refresh()">↻ Refresh</button>
+        <button class="btn ${autoRefresh ? 'active' : ''}" onclick="toggleAuto()">${autoRefresh ? '● Auto 15s' : '○ Manual'}</button>
+        <button class="btn danger" onclick="disconnect()">Disconnect</button>
+      </div>
+    </div>
+    ${err ? `<div class="error-box">⚠ ${err} — check token and HA URL (192.168.1.13:8123)</div>` : ''}
+    <div class="strings">
+      ${stringPanelHTML('String 1 — Kitchen', 'Solis 3kW',
+        {label:'JKBMS-1 (Master)', soc:'bms1_soc', volt:'bms1_volt', curr:'bms1_curr', cell:'bms1_cell', online:'bms1_online'},
+        {label:'JKBMS-2 (Slave)',  soc:'bms2_soc', volt:'bms2_volt', curr:'bms2_curr', cell:'bms2_cell', online:'bms2_online'},
+        {volt:'yam1_volt', ccl:'yam1_ccl', cvl:'yam1_cvl'})}
+      ${stringPanelHTML('String 2 — Shed', 'Sofar HYD 3600',
+        {label:'JKBMS-3 (Master)', soc:'bms3_soc', volt:'bms3_volt', curr:'bms3_curr', cell:'bms3_cell', online:'bms3_online'},
+        {label:'JKBMS-4 (Slave)',  soc:'bms4_soc', volt:'bms4_volt', curr:'bms4_curr', cell:'bms4_cell', online:'bms4_online'},
+        {volt:'yam2_volt', ccl:'yam2_ccl', cvl:'yam2_cvl'})}
+    </div>
+    ${Object.keys(data).length > 0 ? `
+    <div class="eq-panel">
+      <div class="eq-title">Voltage Equalisation Check</div>
+      <div class="eq-grid">
+        ${eqCardHTML('JKBMS-1 vs JKBMS-2', n(data.bms1_volt), n(data.bms2_volt), '')}
+        ${eqCardHTML('JKBMS-3 vs JKBMS-4', n(data.bms3_volt), n(data.bms4_volt), '')}
+        ${eqCardHTML('String-1 SoC gap',   n(data.bms1_soc),  n(data.bms2_soc),  '% SoC')}
+        ${eqCardHTML('String-2 SoC gap',   n(data.bms3_soc),  n(data.bms4_soc),  '% SoC')}
+      </div>
+    </div>` : ''}`;
+}
+
+function renderLogin() {
+  document.getElementById('app').innerHTML = `
+    <div class="login-wrap">
+      <div class="login-box">
+        <h1>⚡ Solar Monitor</h1>
+        <p>Enter your Home Assistant long-lived access token.<br>Generate one at <strong>HA → Profile → Security → Long-lived tokens</strong></p>
+        <input type="password" id="tok" placeholder="eyJ..." onkeydown="if(event.key==='Enter')doLogin()">
+        <button onclick="doLogin()">Connect</button>
+      </div>
+    </div>`;
+}
+
+function doLogin() {
+  const val = document.getElementById('tok').value.trim();
+  if (!val) return;
+  token = val;
+  localStorage.setItem(TOKEN_KEY, token);
+  refresh();
+}
+
+function disconnect() {
+  localStorage.removeItem(TOKEN_KEY);
+  token = "";
+  data = {};
+  clearInterval(refreshTimer);
+  renderLogin();
+}
+
+function toggleAuto() {
+  autoRefresh = !autoRefresh;
+  clearInterval(refreshTimer);
+  if (autoRefresh) refreshTimer = setInterval(refresh, 15000);
+  renderDashboard();
+}
+
+async function refresh() {
+  try {
+    data = await fetchAll();
+    lastUpdate = new Date();
+    renderDashboard();
+  } catch(e) {
+    renderDashboard(e.message);
+  }
+}
+
+// Start
+if (token) {
+  refresh();
+  refreshTimer = setInterval(refresh, 15000);
+} else {
+  renderLogin();
+}
+</script>
+</body>
+</html>
