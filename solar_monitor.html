@@ -127,6 +127,24 @@ const ENTITIES = {
   yam2_ccl:    "sensor.kitchen_yambms_2_string_2_yambms_2_requested_charge_current",
   yam2_cvl:    "sensor.kitchen_yambms_2_string_2_yambms_2_requested_charge_voltage",
   yam2_volt:   "sensor.kitchen_yambms_2_string_2_yambms_2_total_voltage",
+  // Charging status / bulk / float
+  bms1_charge_status: "sensor.kitchen_yambms_1_string_1_jk_bms_1_charging_status",
+  bms2_charge_status: "sensor.kitchen_yambms_1_string_1_jk_bms_2_charging_status",
+  bms3_charge_status: "sensor.kitchen_yambms_2_string_2_jk_bms_3_charging_status",
+  bms4_charge_status: "sensor.kitchen_yambms_2_string_2_jk_bms_4_charging_status",
+  yam1_charge_status: "sensor.kitchen_yambms_1_string_1_yambms_1_charging_status",
+  yam2_charge_status: "sensor.kitchen_yambms_2_string_2_yambms_2_charging_status",
+  // CANBUS status
+  canbus1_status: "binary_sensor.kitchen_yambms_1_string_1_canbus_1_status",
+  canbus2_status: "binary_sensor.kitchen_yambms_2_string_2_canbus_1_status",
+  // Float voltage
+  yam1_float:  "number.kitchen_yambms_1_string_1_yambms_1_float_voltage",
+  yam2_float:  "number.kitchen_yambms_2_string_2_yambms_2_float_voltage",
+  yam1_bulk:   "number.kitchen_yambms_1_string_1_yambms_1_bulk_voltage",
+  yam2_bulk:   "number.kitchen_yambms_2_string_2_yambms_2_bulk_voltage",
+  // Requested force charge
+  yam1_force:  "binary_sensor.kitchen_yambms_1_string_1_yambms_1_requested_force_charge",
+  yam2_force:  "binary_sensor.kitchen_yambms_2_string_2_yambms_2_requested_force_charge",
 };
 
 let token = localStorage.getItem(TOKEN_KEY) || "";
@@ -166,7 +184,7 @@ function currLabel(c) {
   return `${c.toFixed(2)}A ● idle`;
 }
 
-function bmsCardHTML(label, soc, volt, curr, cell, online, warnTag) {
+function bmsCardHTML(label, soc, volt, curr, cell, online, chargeStatus, warnTag) {
   const socNum = n(soc);
   const currNum = n(curr);
   const barColor = socBarColor(socNum);
@@ -177,6 +195,7 @@ function bmsCardHTML(label, soc, volt, curr, cell, online, warnTag) {
         <span class="bms-label">${label}</span>
         ${warnTag ? `<span class="bms-warn-tag">⚠ ${warnTag}</span>` : ''}
       </div>
+      <div style="margin-bottom:6px">${chargeStatusBadge(chargeStatus)}</div>
       <div class="bms-soc ${socNum < 10 ? 'low' : ''}">${socNum}<span class="unit">%</span></div>
       <div class="soc-bar-wrap"><div class="soc-bar" style="width:${socNum}%;background:${barColor}"></div></div>
       <div class="bms-stats">
@@ -187,6 +206,17 @@ function bmsCardHTML(label, soc, volt, curr, cell, online, warnTag) {
     </div>`;
 }
 
+function chargeStatusBadge(status) {
+  if (!status || status === 'unknown' || status === 'unavailable') return '';
+  const s = status.toLowerCase();
+  let color = '#3b82f6', bg = '#1e3a5f';
+  if (s.includes('bulk'))   { color = '#f59e0b'; bg = '#78350f'; }
+  if (s.includes('float'))  { color = '#22c55e'; bg = '#14532d'; }
+  if (s.includes('absorb')) { color = '#a78bfa'; bg = '#3b0764'; }
+  if (s.includes('idle') || s.includes('standby')) { color = '#94a3b8'; bg = '#1e293b'; }
+  return `<span style="background:${bg};color:${color};border:1px solid ${color};border-radius:5px;padding:2px 7px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase">${status}</span>`;
+}
+
 function stringPanelHTML(title, inv, bA, bB, yam) {
   const socA = n(data[bA.soc]), socB = n(data[bB.soc]);
   const voltA = n(data[bA.volt]), voltB = n(data[bB.volt]);
@@ -195,12 +225,16 @@ function stringPanelHTML(title, inv, bA, bB, yam) {
   const voltGap = Math.abs(voltA - voltB);
   const crossFlow = (currA > 2 && currB < -2) || (currA < -2 && currB > 2);
   const highCurr = Math.abs(currA) > 15 || Math.abs(currB) > 15;
+  const canbusOn = data[yam.canbus] === 'on';
+  const forceCharge = data[yam.force] === 'on';
 
   const alerts = [
     socGap > 10 ? `<div class="alert alert-red">⚠ SoC gap: ${socGap.toFixed(0)}% — drift detected, anchor corrects on next charge cycle</div>` : '',
     voltGap > 1.0 ? `<div class="alert alert-red">🚨 Voltage gap: ${voltGap.toFixed(2)}V — batteries fighting! Disconnect one and equalise</div>` : '',
     crossFlow ? `<div class="alert alert-yellow">⚡ Cross-current — one battery charging the other. Check fuse & connections.</div>` : '',
     highCurr ? `<div class="alert alert-yellow">⚠ High current (${Math.max(Math.abs(currA),Math.abs(currB)).toFixed(1)}A) — check inverter limits</div>` : '',
+    !canbusOn ? `<div class="alert alert-red">🔌 CAN bus DOWN — inverter not receiving BMS data!</div>` : '',
+    forceCharge ? `<div class="alert alert-yellow">⚡ Force charge active</div>` : '',
   ].join('');
 
   return `
@@ -216,10 +250,27 @@ function stringPanelHTML(title, inv, bA, bB, yam) {
           <div class="pack-sub">CCL ${n(data[yam.ccl]).toFixed(0)}A · CVL ${n(data[yam.cvl]).toFixed(1)}V</div>
         </div>
       </div>
+
+      <!-- Status bar -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;padding:10px 12px;background:#020617;border-radius:8px;border:1px solid #1e293b">
+        <span style="color:#64748b;font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-right:4px">STATUS</span>
+        ${chargeStatusBadge(data[yam.chargeStatus])}
+        <span style="margin-left:auto;display:flex;align-items:center;gap:6px">
+          <span class="dot ${canbusOn ? 'on' : 'off'}" style="width:8px;height:8px"></span>
+          <span style="font-size:11px;color:${canbusOn ? '#22c55e' : '#ef4444'};font-weight:600">CAN ${canbusOn ? 'ON' : 'DOWN'}</span>
+        </span>
+        <span style="display:flex;align-items:center;gap:6px;margin-left:12px">
+          <span style="color:#64748b;font-size:10px">Bulk</span>
+          <span style="color:#f59e0b;font-size:11px;font-weight:700">${n(data[yam.bulk]).toFixed(1)}V</span>
+          <span style="color:#64748b;font-size:10px;margin-left:6px">Float</span>
+          <span style="color:#22c55e;font-size:11px;font-weight:700">${n(data[yam.float]).toFixed(1)}V</span>
+        </span>
+      </div>
+
       ${alerts}
       <div class="bms-grid">
-        ${bmsCardHTML(bA.label, data[bA.soc], data[bA.volt], data[bA.curr], data[bA.cell], data[bA.online], voltGap > 1.0 && voltA < voltB ? 'LOW' : '')}
-        ${bmsCardHTML(bB.label, data[bB.soc], data[bB.volt], data[bB.curr], data[bB.cell], data[bB.online], voltGap > 1.0 && voltB < voltA ? 'LOW' : '')}
+        ${bmsCardHTML(bA.label, data[bA.soc], data[bA.volt], data[bA.curr], data[bA.cell], data[bA.online], data[bA.chargeStatus], voltGap > 1.0 && voltA < voltB ? 'LOW' : '')}
+        ${bmsCardHTML(bB.label, data[bB.soc], data[bB.volt], data[bB.curr], data[bB.cell], data[bB.online], data[bB.chargeStatus], voltGap > 1.0 && voltB < voltA ? 'LOW' : '')}
       </div>
       <div class="gaps-row">Gaps → Voltage: <span>${voltGap.toFixed(2)}V</span> &nbsp;|&nbsp; SoC: <span>${socGap.toFixed(0)}%</span></div>
     </div>`;
@@ -253,13 +304,13 @@ function renderDashboard(err) {
     ${err ? `<div class="error-box">⚠ ${err} — check token and HA URL (192.168.1.13:8123)</div>` : ''}
     <div class="strings">
       ${stringPanelHTML('String 1 — Kitchen', 'Solis 3kW',
-        {label:'JKBMS-1 (Master)', soc:'bms1_soc', volt:'bms1_volt', curr:'bms1_curr', cell:'bms1_cell', online:'bms1_online'},
-        {label:'JKBMS-2 (Slave)',  soc:'bms2_soc', volt:'bms2_volt', curr:'bms2_curr', cell:'bms2_cell', online:'bms2_online'},
-        {volt:'yam1_volt', ccl:'yam1_ccl', cvl:'yam1_cvl'})}
+        {label:'JKBMS-1 (Master)', soc:'bms1_soc', volt:'bms1_volt', curr:'bms1_curr', cell:'bms1_cell', online:'bms1_online', chargeStatus:'bms1_charge_status'},
+        {label:'JKBMS-2 (Slave)',  soc:'bms2_soc', volt:'bms2_volt', curr:'bms2_curr', cell:'bms2_cell', online:'bms2_online', chargeStatus:'bms2_charge_status'},
+        {volt:'yam1_volt', ccl:'yam1_ccl', cvl:'yam1_cvl', chargeStatus:'yam1_charge_status', canbus:'canbus1_status', bulk:'yam1_bulk', float:'yam1_float', force:'yam1_force'})}
       ${stringPanelHTML('String 2 — Shed', 'Sofar HYD 3600',
-        {label:'JKBMS-3 (Master)', soc:'bms3_soc', volt:'bms3_volt', curr:'bms3_curr', cell:'bms3_cell', online:'bms3_online'},
-        {label:'JKBMS-4 (Slave)',  soc:'bms4_soc', volt:'bms4_volt', curr:'bms4_curr', cell:'bms4_cell', online:'bms4_online'},
-        {volt:'yam2_volt', ccl:'yam2_ccl', cvl:'yam2_cvl'})}
+        {label:'JKBMS-3 (Master)', soc:'bms3_soc', volt:'bms3_volt', curr:'bms3_curr', cell:'bms3_cell', online:'bms3_online', chargeStatus:'bms3_charge_status'},
+        {label:'JKBMS-4 (Slave)',  soc:'bms4_soc', volt:'bms4_volt', curr:'bms4_curr', cell:'bms4_cell', online:'bms4_online', chargeStatus:'bms4_charge_status'},
+        {volt:'yam2_volt', ccl:'yam2_ccl', cvl:'yam2_cvl', chargeStatus:'yam2_charge_status', canbus:'canbus2_status', bulk:'yam2_bulk', float:'yam2_float', force:'yam2_force'})}
     </div>
     ${Object.keys(data).length > 0 ? `
     <div class="eq-panel">
