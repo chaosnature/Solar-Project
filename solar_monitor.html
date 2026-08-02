@@ -97,7 +97,7 @@
 <script>
 // ── CONFIG ───────────────────────────────────────────────
 const HA_URL = "http://192.168.1.13:8123";
-const TOKEN_KEY = "solar_ha_token";
+const TOKEN_KEY = "ha_token";
 // ────────────────────────────────────────────────────────
 
 const ENTITIES = {
@@ -127,24 +127,20 @@ const ENTITIES = {
   yam2_ccl:    "sensor.kitchen_yambms_2_string_2_yambms_2_requested_charge_current",
   yam2_cvl:    "sensor.kitchen_yambms_2_string_2_yambms_2_requested_charge_voltage",
   yam2_volt:   "sensor.kitchen_yambms_2_string_2_yambms_2_total_voltage",
-  // Charging status / bulk / float
-  bms1_charge_status: "sensor.kitchen_yambms_1_string_1_jk_bms_1_charging_status",
-  bms2_charge_status: "sensor.kitchen_yambms_1_string_1_jk_bms_2_charging_status",
-  bms3_charge_status: "sensor.kitchen_yambms_2_string_2_jk_bms_3_charging_status",
-  bms4_charge_status: "sensor.kitchen_yambms_2_string_2_jk_bms_4_charging_status",
+  // Charging status
   yam1_charge_status: "sensor.kitchen_yambms_1_string_1_yambms_1_charging_status",
   yam2_charge_status: "sensor.kitchen_yambms_2_string_2_yambms_2_charging_status",
   // CANBUS status
   canbus1_status: "binary_sensor.kitchen_yambms_1_string_1_canbus_1_status",
   canbus2_status: "binary_sensor.kitchen_yambms_2_string_2_canbus_1_status",
-  // Float voltage
+  // Float/Bulk voltage
   yam1_float:  "number.kitchen_yambms_1_string_1_yambms_1_float_voltage",
   yam2_float:  "number.kitchen_yambms_2_string_2_yambms_2_float_voltage",
   yam1_bulk:   "number.kitchen_yambms_1_string_1_yambms_1_bulk_voltage",
   yam2_bulk:   "number.kitchen_yambms_2_string_2_yambms_2_bulk_voltage",
-  // Requested force charge
-  yam1_force:  "binary_sensor.kitchen_yambms_1_string_1_yambms_1_requested_force_charge",
-  yam2_force:  "binary_sensor.kitchen_yambms_2_string_2_yambms_2_requested_force_charge",
+  // Force charge
+  yam1_force:  "switch.kitchen_yambms_1_string_1_yambms_1_request_force_charge",
+  yam2_force:  "switch.kitchen_yambms_2_string_2_yambms_2_request_force_charge",
 };
 
 let token = localStorage.getItem(TOKEN_KEY) || "";
@@ -269,8 +265,8 @@ function stringPanelHTML(title, inv, bA, bB, yam) {
 
       ${alerts}
       <div class="bms-grid">
-        ${bmsCardHTML(bA.label, data[bA.soc], data[bA.volt], data[bA.curr], data[bA.cell], data[bA.online], data[bA.chargeStatus], voltGap > 1.0 && voltA < voltB ? 'LOW' : '')}
-        ${bmsCardHTML(bB.label, data[bB.soc], data[bB.volt], data[bB.curr], data[bB.cell], data[bB.online], data[bB.chargeStatus], voltGap > 1.0 && voltB < voltA ? 'LOW' : '')}
+        ${bmsCardHTML(bA.label, data[bA.soc], data[bA.volt], data[bA.curr], data[bA.cell], data[bA.online], null, voltGap > 1.0 && voltA < voltB ? 'LOW' : '')}
+        ${bmsCardHTML(bB.label, data[bB.soc], data[bB.volt], data[bB.curr], data[bB.cell], data[bB.online], null, voltGap > 1.0 && voltB < voltA ? 'LOW' : '')}
       </div>
       <div class="gaps-row">Gaps → Voltage: <span>${voltGap.toFixed(2)}V</span> &nbsp;|&nbsp; SoC: <span>${socGap.toFixed(0)}%</span></div>
     </div>`;
@@ -304,12 +300,12 @@ function renderDashboard(err) {
     ${err ? `<div class="error-box">⚠ ${err} — check token and HA URL (192.168.1.13:8123)</div>` : ''}
     <div class="strings">
       ${stringPanelHTML('String 1 — Kitchen', 'Solis 3kW',
-        {label:'JKBMS-1 (Master)', soc:'bms1_soc', volt:'bms1_volt', curr:'bms1_curr', cell:'bms1_cell', online:'bms1_online', chargeStatus:'bms1_charge_status'},
-        {label:'JKBMS-2 (Slave)',  soc:'bms2_soc', volt:'bms2_volt', curr:'bms2_curr', cell:'bms2_cell', online:'bms2_online', chargeStatus:'bms2_charge_status'},
+        {label:'JKBMS-1 (Master)', soc:'bms1_soc', volt:'bms1_volt', curr:'bms1_curr', cell:'bms1_cell', online:'bms1_online'},
+        {label:'JKBMS-2 (Slave)',  soc:'bms2_soc', volt:'bms2_volt', curr:'bms2_curr', cell:'bms2_cell', online:'bms2_online'},
         {volt:'yam1_volt', ccl:'yam1_ccl', cvl:'yam1_cvl', chargeStatus:'yam1_charge_status', canbus:'canbus1_status', bulk:'yam1_bulk', float:'yam1_float', force:'yam1_force'})}
       ${stringPanelHTML('String 2 — Shed', 'Sofar HYD 3600',
-        {label:'JKBMS-3 (Master)', soc:'bms3_soc', volt:'bms3_volt', curr:'bms3_curr', cell:'bms3_cell', online:'bms3_online', chargeStatus:'bms3_charge_status'},
-        {label:'JKBMS-4 (Slave)',  soc:'bms4_soc', volt:'bms4_volt', curr:'bms4_curr', cell:'bms4_cell', online:'bms4_online', chargeStatus:'bms4_charge_status'},
+        {label:'JKBMS-3 (Master)', soc:'bms3_soc', volt:'bms3_volt', curr:'bms3_curr', cell:'bms3_cell', online:'bms3_online'},
+        {label:'JKBMS-4 (Slave)',  soc:'bms4_soc', volt:'bms4_volt', curr:'bms4_curr', cell:'bms4_cell', online:'bms4_online'},
         {volt:'yam2_volt', ccl:'yam2_ccl', cvl:'yam2_cvl', chargeStatus:'yam2_charge_status', canbus:'canbus2_status', bulk:'yam2_bulk', float:'yam2_float', force:'yam2_force'})}
     </div>
     ${Object.keys(data).length > 0 ? `
